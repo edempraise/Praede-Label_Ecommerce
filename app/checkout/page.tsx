@@ -57,30 +57,27 @@ const CheckoutPage = () => {
       setIsUploading(true);
       
       // Create order first
-      const order = await createOrder({
+      const orderData = {
         ...orderData,
         items: cart,
         total_amount: getCartTotal(),
         status: 'pending',
-      });
+      } as const;
+      
+      const order = await createOrder(orderData);
 
       // Upload payment receipt
       const receiptUrl = await uploadPaymentReceipt(file, order.id);
       
-      // Update order with receipt URL
-      await createOrder({
-        ...orderData,
-        items: cart,
-        total_amount: getCartTotal(),
-        status: 'payment_review',
-        payment_receipt: receiptUrl,
-      });
+      // Update order status to payment_review
+      await updateOrderStatus(order.id, 'payment_review');
 
       // Clear cart and redirect
       clearCart();
       router.push(`/orders/${order.id}`);
     } catch (error) {
       console.error('Error creating order:', error);
+      // You might want to show a toast notification here
     } finally {
       setIsUploading(false);
     }

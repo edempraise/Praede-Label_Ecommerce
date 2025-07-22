@@ -1,22 +1,27 @@
 import { createClient } from '@supabase/supabase-js';
+import { Product, Order, Category } from '@/types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing Supabase environment variables');
+}
+
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Helper functions for database operations
-export const getProducts = async () => {
+export const getProducts = async (): Promise<Product[]> => {
   const { data, error } = await supabase
     .from('products')
     .select('*')
     .order('created_at', { ascending: false });
   
   if (error) throw error;
-  return data;
+  return data || [];
 };
 
-export const getFeaturedProducts = async () => {
+export const getFeaturedProducts = async (): Promise<Product[]> => {
   const { data, error } = await supabase
     .from('products')
     .select('*')
@@ -25,31 +30,34 @@ export const getFeaturedProducts = async () => {
     .limit(8);
   
   if (error) throw error;
-  return data;
+  return data || [];
 };
 
-export const getProductById = async (id: string) => {
+export const getProductById = async (id: string): Promise<Product | null> => {
   const { data, error } = await supabase
     .from('products')
     .select('*')
     .eq('id', id)
     .single();
   
-  if (error) throw error;
+  if (error) {
+    if (error.code === 'PGRST116') return null; // Not found
+    throw error;
+  }
   return data;
 };
 
-export const getCategories = async () => {
+export const getCategories = async (): Promise<Category[]> => {
   const { data, error } = await supabase
     .from('categories')
     .select('*')
     .order('name');
   
   if (error) throw error;
-  return data;
+  return data || [];
 };
 
-export const createOrder = async (orderData: any) => {
+export const createOrder = async (orderData: Omit<Order, 'id' | 'created_at' | 'updated_at'>): Promise<Order> => {
   const { data, error } = await supabase
     .from('orders')
     .insert(orderData)
@@ -60,17 +68,31 @@ export const createOrder = async (orderData: any) => {
   return data;
 };
 
-export const getOrders = async () => {
+export const getOrders = async (): Promise<Order[]> => {
   const { data, error } = await supabase
     .from('orders')
     .select('*')
     .order('created_at', { ascending: false });
   
   if (error) throw error;
+  return data || [];
+};
+
+export const getOrderById = async (id: string): Promise<Order | null> => {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('id', id)
+    .single();
+  
+  if (error) {
+    if (error.code === 'PGRST116') return null; // Not found
+    throw error;
+  }
   return data;
 };
 
-export const updateOrderStatus = async (orderId: string, status: string) => {
+export const updateOrderStatus = async (orderId: string, status: Order['status']): Promise<Order> => {
   const { data, error } = await supabase
     .from('orders')
     .update({ status, updated_at: new Date().toISOString() })
@@ -82,7 +104,7 @@ export const updateOrderStatus = async (orderId: string, status: string) => {
   return data;
 };
 
-export const uploadPaymentReceipt = async (file: File, orderId: string) => {
+export const uploadPaymentReceipt = async (file: File, orderId: string): Promise<string> => {
   const fileName = `payment-receipts/${orderId}-${Date.now()}.${file.name.split('.').pop()}`;
   
   const { data, error } = await supabase.storage
@@ -96,4 +118,30 @@ export const uploadPaymentReceipt = async (file: File, orderId: string) => {
     .getPublicUrl(fileName);
   
   return publicUrl;
+};
+
+// Search products
+export const searchProducts = async (query: string): Promise<Product[]> => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+    .eq('in_stock', true)
+    .order('created_at', { ascending: false });
+  
+  if (error) throw error;
+  return data || [];
+};
+
+// Get products by category
+export const getProductsByCategory = async (category: string): Promise<Product[]> => {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('category', category)
+    .eq('in_stock', true)
+    .order('created_at', { ascending: false });
+  
+  if (error) throw error;
+  return data || [];
 };

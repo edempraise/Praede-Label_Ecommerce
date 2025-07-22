@@ -6,62 +6,55 @@ import { motion } from 'framer-motion';
 import { Package, MapPin, Clock, Phone, Mail } from 'lucide-react';
 import OrderTimeline from '@/components/OrderTimeline';
 import { Order } from '@/types';
+import { getOrderById } from '@/lib/supabase';
 
 const OrderDetailPage = () => {
   const params = useParams();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Mock order data for demonstration
-    const mockOrder: Order = {
-      id: params.id as string,
-      customer_name: 'John Doe',
-      customer_email: 'john@example.com',
-      customer_phone: '+2348123456789',
-      shipping_address: '123 Main St, Victoria Island',
-      city: 'Lagos',
-      state: 'Lagos',
-      items: [
-        {
-          id: '1',
-          product: {
-            id: '1',
-            name: 'Premium Cotton T-Shirt',
-            description: 'Soft, comfortable cotton t-shirt',
-            price: 15000,
-            original_price: 20000,
-            category: 'Clothing',
-            size: ['S', 'M', 'L', 'XL'],
-            color: ['Black', 'White', 'Navy'],
-            images: ['https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg'],
-            in_stock: true,
-            featured: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          quantity: 2,
-          size: 'M',
-          color: 'Black',
-        },
-      ],
-      total_amount: 30000,
-      status: 'payment_review',
-      payment_receipt: 'receipt-url',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+    const loadOrder = async () => {
+      if (!params.id) return;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        const orderData = await getOrderById(params.id as string);
+        setOrder(orderData);
+      } catch (err) {
+        console.error('Error loading order:', err);
+        setError('Failed to load order details');
+      } finally {
+        setLoading(false);
+      }
     };
 
-    setTimeout(() => {
-      setOrder(mockOrder);
-      setLoading(false);
-    }, 1000);
+    loadOrder();
   }, [params.id]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Order</h2>
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }

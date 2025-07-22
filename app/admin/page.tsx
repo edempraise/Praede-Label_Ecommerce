@@ -9,56 +9,37 @@ import { getOrders, updateOrderStatus } from '@/lib/supabase';
 const AdminDashboard = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('orders');
 
-  // Mock data for demonstration
   useEffect(() => {
-    const mockOrders: Order[] = [
-      {
-        id: '1',
-        customer_name: 'John Doe',
-        customer_email: 'john@example.com',
-        customer_phone: '+2348123456789',
-        shipping_address: '123 Main St, Victoria Island',
-        city: 'Lagos',
-        state: 'Lagos',
-        items: [],
-        total_amount: 50000,
-        status: 'payment_review',
-        payment_receipt: 'receipt-url-1',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        customer_name: 'Jane Smith',
-        customer_email: 'jane@example.com',
-        customer_phone: '+2348123456790',
-        shipping_address: '456 Oak Ave, Ikeja',
-        city: 'Lagos',
-        state: 'Lagos',
-        items: [],
-        total_amount: 35000,
-        status: 'preparing',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    ];
+    const loadOrders = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const allOrders = await getOrders();
+        setOrders(allOrders);
+      } catch (err) {
+        console.error('Error loading orders:', err);
+        setError('Failed to load orders');
+        setOrders([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setTimeout(() => {
-      setOrders(mockOrders);
-      setLoading(false);
-    }, 1000);
+    loadOrders();
   }, []);
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     try {
-      await updateOrderStatus(orderId, newStatus);
+      await updateOrderStatus(orderId, newStatus as Order['status']);
       setOrders(orders.map(order => 
-        order.id === orderId ? { ...order, status: newStatus as any } : order
+        order.id === orderId ? { ...order, status: newStatus as Order['status'] } : order
       ));
     } catch (error) {
       console.error('Error updating order status:', error);
+      // You might want to show a toast notification here
     }
   };
 
@@ -150,6 +131,20 @@ const AdminDashboard = () => {
                     <div key={i} className="h-16 bg-gray-200 rounded"></div>
                   ))}
                 </div>
+              </div>
+            ) : error ? (
+              <div className="p-6 text-center">
+                <p className="text-red-500 text-lg mb-4">{error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : orders.length === 0 ? (
+              <div className="p-6 text-center">
+                <p className="text-gray-500 text-lg">No orders found.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">

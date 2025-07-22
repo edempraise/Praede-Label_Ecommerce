@@ -7,79 +7,31 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Star, Truck, Shield, HeadphonesIcon } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/types';
+import { getFeaturedProducts } from '@/lib/supabase';
 
 const HomePage = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data for demonstration
   useEffect(() => {
-    const mockProducts: Product[] = [
-      {
-        id: '1',
-        name: 'Premium Cotton T-Shirt',
-        description: 'Soft, comfortable cotton t-shirt perfect for everyday wear',
-        price: 15000,
-        original_price: 20000,
-        category: 'Clothing',
-        size: ['S', 'M', 'L', 'XL'],
-        color: ['Black', 'White', 'Navy', 'Gray'],
-        images: ['https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg'],
-        in_stock: true,
-        featured: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        name: 'Designer Jeans',
-        description: 'Premium denim jeans with modern fit and style',
-        price: 35000,
-        original_price: 45000,
-        category: 'Clothing',
-        size: ['28', '30', '32', '34', '36'],
-        color: ['Blue', 'Black', 'Light Blue'],
-        images: ['https://images.pexels.com/photos/1598507/pexels-photo-1598507.jpeg'],
-        in_stock: true,
-        featured: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: '3',
-        name: 'Elegant Dress',
-        description: 'Beautiful evening dress for special occasions',
-        price: 65000,
-        original_price: 80000,
-        category: 'Clothing',
-        size: ['S', 'M', 'L'],
-        color: ['Red', 'Black', 'Navy'],
-        images: ['https://images.pexels.com/photos/1926769/pexels-photo-1926769.jpeg'],
-        in_stock: true,
-        featured: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: '4',
-        name: 'Luxury Handbag',
-        description: 'Premium leather handbag with elegant design',
-        price: 85000,
-        category: 'Accessories',
-        size: ['One Size'],
-        color: ['Brown', 'Black', 'Tan'],
-        images: ['https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg'],
-        in_stock: true,
-        featured: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    ];
+    const loadFeaturedProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const products = await getFeaturedProducts();
+        setFeaturedProducts(products);
+      } catch (err) {
+        console.error('Error loading featured products:', err);
+        setError('Failed to load featured products');
+        // Fallback to empty array
+        setFeaturedProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setTimeout(() => {
-      setFeaturedProducts(mockProducts);
-      setLoading(false);
-    }, 1000);
+    loadFeaturedProducts();
   }, []);
 
   return (
@@ -198,6 +150,20 @@ const HomePage = () => {
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="bg-gray-200 rounded-lg h-80 animate-pulse"></div>
               ))}
+            </div>
+          ) : error ? (
+            <div className="text-center py-16">
+              <p className="text-red-500 text-lg mb-4">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
+          ) : featuredProducts.length === 0 ? (
+            <div className="text-center py-16">
+              <p className="text-gray-500 text-lg">No featured products available at the moment.</p>
             </div>
           ) : (
             <motion.div

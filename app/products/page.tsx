@@ -5,11 +5,13 @@ import { Filter, Search, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/types';
+import { getProducts, searchProducts, getProductsByCategory } from '@/lib/supabase';
 
 const ProductsPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 100000 });
@@ -18,103 +20,25 @@ const ProductsPage = () => {
 
   const categories = ['all', 'Clothing', 'Accessories', 'Footwear', 'Electronics'];
 
-  // Mock data for demonstration
   useEffect(() => {
-    const mockProducts: Product[] = [
-      {
-        id: '1',
-        name: 'Premium Cotton T-Shirt',
-        description: 'Soft, comfortable cotton t-shirt perfect for everyday wear',
-        price: 15000,
-        original_price: 20000,
-        category: 'Clothing',
-        size: ['S', 'M', 'L', 'XL'],
-        color: ['Black', 'White', 'Navy', 'Gray'],
-        images: ['https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg'],
-        in_stock: true,
-        featured: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        name: 'Designer Jeans',
-        description: 'Premium denim jeans with modern fit and style',
-        price: 35000,
-        original_price: 45000,
-        category: 'Clothing',
-        size: ['28', '30', '32', '34', '36'],
-        color: ['Blue', 'Black', 'Light Blue'],
-        images: ['https://images.pexels.com/photos/1598507/pexels-photo-1598507.jpeg'],
-        in_stock: true,
-        featured: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: '3',
-        name: 'Elegant Dress',
-        description: 'Beautiful evening dress for special occasions',
-        price: 65000,
-        original_price: 80000,
-        category: 'Clothing',
-        size: ['S', 'M', 'L'],
-        color: ['Red', 'Black', 'Navy'],
-        images: ['https://images.pexels.com/photos/1926769/pexels-photo-1926769.jpeg'],
-        in_stock: true,
-        featured: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: '4',
-        name: 'Luxury Handbag',
-        description: 'Premium leather handbag with elegant design',
-        price: 85000,
-        category: 'Accessories',
-        size: ['One Size'],
-        color: ['Brown', 'Black', 'Tan'],
-        images: ['https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg'],
-        in_stock: true,
-        featured: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: '5',
-        name: 'Sports Sneakers',
-        description: 'Comfortable sports sneakers for active lifestyle',
-        price: 45000,
-        category: 'Footwear',
-        size: ['40', '41', '42', '43', '44'],
-        color: ['White', 'Black', 'Red'],
-        images: ['https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg'],
-        in_stock: true,
-        featured: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: '6',
-        name: 'Wireless Headphones',
-        description: 'High-quality wireless headphones with noise cancellation',
-        price: 75000,
-        category: 'Electronics',
-        size: ['One Size'],
-        color: ['Black', 'White', 'Blue'],
-        images: ['https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg'],
-        in_stock: true,
-        featured: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    ];
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const allProducts = await getProducts();
+        setProducts(allProducts);
+        setFilteredProducts(allProducts);
+      } catch (err) {
+        console.error('Error loading products:', err);
+        setError('Failed to load products');
+        setProducts([]);
+        setFilteredProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setTimeout(() => {
-      setProducts(mockProducts);
-      setFilteredProducts(mockProducts);
-      setLoading(false);
-    }, 1000);
+    loadProducts();
   }, []);
 
   // Filter and sort products
@@ -283,7 +207,19 @@ const ProductsPage = () => {
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="text-center py-16">
-                <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
+                {error ? (
+                  <>
+                    <p className="text-red-500 text-lg mb-4">{error}</p>
+                    <button
+                      onClick={() => window.location.reload()}
+                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Try Again
+                    </button>
+                  </>
+                ) : (
+                  <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
+                )}
               </div>
             ) : (
               <motion.div
