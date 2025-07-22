@@ -5,12 +5,14 @@ import { Package, ShoppingCart, Users, TrendingUp, Eye, Edit, Trash2, Check, X }
 import { motion } from 'framer-motion';
 import { Order, Product } from '@/types';
 import { getOrders, updateOrderStatus } from '@/lib/supabase';
+import AddProductModal from './components/AddProductModal';
 
 const AdminDashboard = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('orders');
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -41,6 +43,11 @@ const AdminDashboard = () => {
       console.error('Error updating order status:', error);
       // You might want to show a toast notification here
     }
+  };
+
+  const handleProductAdded = () => {
+    // Refresh products list if needed
+    // This could trigger a refetch of products
   };
 
   const getStatusColor = (status: string) => {
@@ -245,7 +252,10 @@ const AdminDashboard = () => {
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-gray-900">Products</h2>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+              <button 
+                onClick={() => setShowAddProductModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
                 Add Product
               </button>
             </div>
@@ -261,6 +271,13 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Add Product Modal */}
+      <AddProductModal
+        isOpen={showAddProductModal}
+        onClose={() => setShowAddProductModal(false)}
+        onProductAdded={handleProductAdded}
+      />
     </div>
   );
 };

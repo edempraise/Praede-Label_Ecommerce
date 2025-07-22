@@ -7,6 +7,8 @@ import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Product } from '@/types';
 import { useStore } from '@/store/useStore';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProductCardProps {
   product: Product;
@@ -15,18 +17,48 @@ interface ProductCardProps {
 const ProductCard = ({ product }: ProductCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
   const { addToCart, addToWishlist, wishlist } = useStore();
+  const { user } = useAuth();
+  const { toast } = useToast();
   
   const isInWishlist = wishlist.some(item => item.product.id === product.id);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: 'Login Required',
+        description: 'Please login to add items to your cart.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     addToCart(product, 1, product.size[0] || 'M', product.color[0] || 'Default');
+    toast({
+      title: 'Added to Cart',
+      description: `${product.name} has been added to your cart.`,
+    });
   };
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: 'Login Required',
+        description: 'Please login to add items to your wishlist.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     addToWishlist(product);
     setIsLiked(true);
+    toast({
+      title: 'Added to Wishlist',
+      description: `${product.name} has been added to your wishlist.`,
+    });
   };
 
   return (

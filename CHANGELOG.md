@@ -1,5 +1,72 @@
 # Changelog
 
+## [1.1.0] - 2025-01-22
+
+### Added
+- **Authentication System**: Complete user authentication with signup/login
+  - Created `/auth/login` and `/auth/signup` pages with form validation
+  - Added `AuthModal` component for modal-based authentication
+  - Implemented `useAuth` hook for session management
+  - Added automatic login prompt after 1 minute for unauthenticated users
+
+- **Enhanced User Experience**:
+  - Login requirement for cart and wishlist operations
+  - User profile dropdown in header with account management
+  - Toast notifications for user feedback
+  - Session-based navigation and redirects
+
+- **Admin Product Management**:
+  - Created `AddProductModal` component for comprehensive product creation
+  - Support for multiple product addition in single operation
+  - Product image upload with drag-and-drop interface
+  - Delivery options configuration (Lagos/Outside Lagos, Pickup/Door delivery)
+  - Discount percentage calculation with real-time price preview
+  - Dynamic size and color variant management
+
+### Changed
+- **Header Component**: 
+  - Integrated authentication state management
+  - Added login requirement checks for cart/wishlist access
+  - Implemented user dropdown menu with account options
+  - Added automatic login prompt modal
+
+- **ProductCard Component**:
+  - Added authentication checks for add-to-cart and wishlist actions
+  - Enhanced user feedback with toast notifications
+  - Improved error handling for unauthenticated users
+
+- **Admin Dashboard**:
+  - Connected "Add Product" button to functional modal
+  - Enhanced product management capabilities
+  - Improved admin workflow with bulk product operations
+
+### Technical Improvements
+- **Authentication Flow**: Supabase Auth integration with proper session management
+- **Form Validation**: Comprehensive client-side validation for all forms
+- **File Uploads**: Integrated Supabase Storage for product images
+- **State Management**: Enhanced user state management across components
+- **Error Handling**: Improved error handling with user-friendly messages
+- **Type Safety**: Added proper TypeScript types for authentication
+
+### Security Enhancements
+- **Protected Routes**: Authentication requirements for sensitive operations
+- **Session Management**: Proper session handling and cleanup
+- **User Permissions**: Basic admin/user role differentiation
+- **Secure File Uploads**: Validated file uploads with proper storage policies
+
+### User Interface Improvements
+- **Modal System**: Consistent modal design across authentication flows
+- **Loading States**: Proper loading indicators for async operations
+- **Form UX**: Enhanced form experience with validation feedback
+- **Responsive Design**: Mobile-optimized authentication flows
+- **Toast System**: Integrated toast notifications for user feedback
+
+### Database Integration
+- **User Profiles**: Automatic user profile creation on signup
+- **Product Management**: Full CRUD operations for products
+- **File Storage**: Product image storage with Supabase Storage
+- **Session Tracking**: User session management with Supabase Auth
+
 ## [1.0.0] - 2025-01-22
 
 ### Added
