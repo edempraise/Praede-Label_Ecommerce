@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Search, ShoppingCart, Heart, Menu, X, User } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import { Search, ShoppingCart, Heart, Menu, X, User, ArrowLeft } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/hooks/useAuth';
 import AuthModal from '@/components/AuthModal';
@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const Header = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -62,6 +63,29 @@ const Header = () => {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   if (!mounted || loading) return null;
+
+  const isAuthPage = pathname.startsWith('/auth') || pathname.startsWith('/admin/signin') || pathname.startsWith('/admin/signup');
+
+  if (isAuthPage) {
+    return (
+      <header className="bg-white shadow-lg sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">E</span>
+              </div>
+              <span className="text-xl font-bold text-gray-900">ElegantShop</span>
+            </Link>
+            <Link href="/" className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+              <span>Back to Home</span>
+            </Link>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <>
@@ -151,6 +175,14 @@ const Header = () => {
                   >
                     Profile
                   </Link>
+                  {user.user_metadata.is_admin && (
+                    <Link
+                      href="/admin/profile"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Admin Profile
+                    </Link>
+                  )}
                   <Link
                     href="/orders"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

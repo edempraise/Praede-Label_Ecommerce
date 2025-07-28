@@ -111,11 +111,6 @@ CREATE TABLE IF NOT EXISTS orders (
   updated_at timestamptz DEFAULT now()
 );
 
--- Create admins Table
-CREATE TABLE admins (
-  user_id uuid PRIMARY KEY REFERENCES users(id)
-);
-
 -- Create users table (extends auth.users)
 CREATE TABLE IF NOT EXISTS users (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -213,29 +208,34 @@ CREATE POLICY "Admins can update orders"
   );
 
 -- Users policies
-CREATE POLICY "Users can view their own profile"
-  ON users
-  FOR SELECT
-  TO authenticated
-  USING (id = auth.uid());
+-- Regular users can view their own profile
+create policy "Users can view own profile"
+on public.users
+for select
+to authenticated
+using ( id = auth.uid() );
 
-CREATE POLICY "Users can update their own profile"
-  ON users
-  FOR UPDATE
-  TO authenticated
-  USING (id = auth.uid());
+-- Regular users can update their own profile
+create policy "Users can update own profile"
+on public.users
+for update
+to authenticated
+using ( id = auth.uid() )
+with check ( id = auth.uid() );
 
-CREATE POLICY "Admins can view all users"
-  ON users
-  FOR SELECT
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM users 
-      WHERE users.id = auth.uid() 
-      AND users.is_admin = true
-    )
-  );
+-- Admins can view all users
+create policy "Admins can view all users"
+on public.users
+for select
+to authenticated
+using ( is_admin = true );
+
+-- Admins can update all users
+create policy "Admins can update all users"
+on public.users
+for update
+to authenticated
+using ( is_admin = true );
 
 -- Storage policies for receipts bucket
 CREATE POLICY "Anyone can upload receipts"
@@ -309,6 +309,32 @@ CREATE TRIGGER update_orders_updated_at
   BEFORE UPDATE ON orders
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+-- function for the users table and the trigger
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+as $$
+begin
+  insert into public.users (id, email, is_admin)
+  values (
+    new.id,
+    new.email,
+    coalesce((new.raw_user_meta_data->>'is_admin')::boolean, false)
+  )
+  on conflict (id) do update
+    set email = excluded.email,
+        is_admin = excluded.is_admin;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+after insert on auth.users
+for each row
+execute procedure public.handle_new_user();
 
 -- Insert sample categories
 INSERT INTO categories (name, slug, description) VALUES
