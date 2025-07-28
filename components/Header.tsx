@@ -17,9 +17,9 @@ const Header = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const { cart, wishlist } = useStore();
-  const cartCount = useStore(state => state.getCartCount());
+  const { cart, wishlist, getCartCount } = useStore();
   const { user, loading, signOut } = useAuth();
+  const cartCount = user ? getCartCount(user.id) : 0;
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -53,6 +53,11 @@ const Header = () => {
       // Navigate to user profile or show dropdown
       router.push('/account');
     }
+  };
+
+  const handleAdminPortalClick = async () => {
+    await signOut();
+    router.push('/admin/signin');
   };
 
   const handleSignOut = async () => {
@@ -183,6 +188,12 @@ const Header = () => {
                       Admin Profile
                     </Link>
                   )}
+                  <button
+                    onClick={handleAdminPortalClick}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Admin Portal
+                  </button>
                   <Link
                     href="/orders"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -199,7 +210,10 @@ const Header = () => {
               </div>
             ) : (
               <button
-                onClick={handleProfileClick}
+                onClick={async () => {
+                  await signOut();
+                  router.push('/auth/login');
+                }}
                 className="p-2 text-gray-700 hover:text-blue-600 transition-colors"
               >
                 <User className="w-6 h-6" />

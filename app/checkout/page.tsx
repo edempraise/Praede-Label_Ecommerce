@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { CheckCircle, CreditCard, MapPin, User } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useAuth } from '@/hooks/useAuth';
 import { PaystackButton } from 'react-paystack';
 import { createOrder, updateOrderStatus, uploadPaymentReceipt } from '@/lib/supabase';
 import PaymentUpload from '@/components/PaymentUpload';
@@ -12,7 +13,9 @@ import PaymentUpload from '@/components/PaymentUpload';
 const CheckoutPage = () => {
   const router = useRouter();
   const { cart, getCartTotal, clearCart } = useStore();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const userCart = user ? cart[user.id] || [] : [];
   const [paymentMethod, setPaymentMethod] = useState<'paystack' | 'bank_transfer' | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [orderData, setOrderData] = useState({
@@ -32,10 +35,10 @@ const CheckoutPage = () => {
   }, []);
 
   useEffect(() => {
-    if (mounted && cart.length === 0) {
+    if (mounted && userCart.length === 0) {
       router.push('/cart');
     }
-  }, [cart, router, mounted]);
+  }, [userCart, router, mounted]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setOrderData({
@@ -60,14 +63,14 @@ const CheckoutPage = () => {
     try {
       const orderPayload = {
         ...orderData,
-        items: cart,
-        total_amount: getCartTotal(),
+        items: userCart,
+        total_amount: getCartTotal(user.id),
         status: 'paid',
         payment_receipt: reference.reference,
       } as const;
 
       const order = await createOrder(orderPayload);
-      clearCart();
+      clearCart(user.id);
       router.push(`/orders/${order.id}`);
     } catch (error) {
       console.error('Error creating order:', error);
@@ -84,8 +87,8 @@ const CheckoutPage = () => {
 
       const orderPayload = {
         ...orderData,
-        items: cart,
-        total_amount: getCartTotal(),
+        items: userCart,
+        total_amount: getCartTotal(user.id),
         status: 'pending',
       } as const;
 
@@ -95,7 +98,7 @@ const CheckoutPage = () => {
 
       await updateOrderStatus(order.id, 'payment_review');
 
-      clearCart();
+      clearCart(user.id);
       router.push(`/orders/${order.id}`);
     } catch (error) {
       console.error('Error creating order:', error);
@@ -170,7 +173,7 @@ const CheckoutPage = () => {
               <h2 className="text-xl font-bold text-gray-900 mb-6">Review Your Order</h2>
               
               <div className="space-y-4 mb-6">
-                {cart.map((item) => (
+                {userCart.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                     <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
                     <div className="flex-1">
@@ -189,7 +192,7 @@ const CheckoutPage = () => {
               <div className="border-t pt-4 mb-6">
                 <div className="flex justify-between text-xl font-bold text-gray-900">
                   <span>Total</span>
-                  <span>₦{getCartTotal().toLocaleString()}</span>
+                  <span>₦{user && getCartTotal(user.id).toLocaleString()}</span>
                 </div>
               </div>
               

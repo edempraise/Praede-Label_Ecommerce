@@ -16,11 +16,11 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
-  const { addToCart, addToWishlist, wishlist } = useStore();
+  const { addToCart, addToWishlist, wishlist, isInWishlist } = useStore();
   const { user } = useAuth();
   const { toast } = useToast();
   
-  const isInWishlist = wishlist.some(item => item.product.id === product.id);
+  const isProductInWishlist = user ? isInWishlist(product.id, user.id) : false;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -34,12 +34,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
       return;
     }
     
-    addToCart(product, 1, product.size[0] || 'M', product.color[0] || 'Default');
+    addToCart(product, 1, product.size[0] || 'M', product.color[0] || 'Default', user.id);
     toast({
       title: 'Added to Cart',
       description: `${product.name} has been added to your cart.`,
     });
   };
+
+  const { addToCart, addToWishlist, removeFromWishlist, wishlist, isInWishlist } = useStore();
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const isProductInWishlist = user ? isInWishlist(product.id, user.id) : false;
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -53,12 +59,22 @@ const ProductCard = ({ product }: ProductCardProps) => {
       return;
     }
     
-    addToWishlist(product);
-    setIsLiked(true);
-    toast({
-      title: 'Added to Wishlist',
-      description: `${product.name} has been added to your wishlist.`,
-    });
+    if (isProductInWishlist) {
+      const wishlistItem = wishlist[user.id].find(item => item.product.id === product.id);
+      if (wishlistItem) {
+        removeFromWishlist(wishlistItem.id, user.id);
+        toast({
+          title: 'Removed from Wishlist',
+          description: `${product.name} has been removed from your wishlist.`,
+        });
+      }
+    } else {
+      addToWishlist(product, user.id);
+      toast({
+        title: 'Added to Wishlist',
+        description: `${product.name} has been added to your wishlist.`,
+      });
+    }
   };
 
   return (

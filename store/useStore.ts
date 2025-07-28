@@ -5,37 +5,41 @@ import { persist } from 'zustand/middleware';
 import { CartItem, WishlistItem, Product } from '@/types';
 
 interface StoreState {
-  cart: CartItem[];
-  wishlist: WishlistItem[];
-  addToCart: (product: Product, quantity: number, size: string, color: string) => void;
-  removeFromCart: (id: string) => void;
-  updateCartItem: (id: string, quantity: number) => void;
-  clearCart: () => void;
-  addToWishlist: (product: Product) => void;
-  removeFromWishlist: (id: string) => void;
-  getCartTotal: () => number;
-  getCartCount: () => number;
+  cart: { [userId: string]: CartItem[] };
+  wishlist: { [userId: string]: WishlistItem[] };
+  addToCart: (product: Product, quantity: number, size: string, color: string, userId: string) => void;
+  removeFromCart: (id: string, userId: string) => void;
+  updateCartItem: (id: string, quantity: number, userId: string) => void;
+  clearCart: (userId: string) => void;
+  addToWishlist: (product: Product, userId: string) => void;
+  removeFromWishlist: (id: string, userId: string) => void;
+  getCartTotal: (userId: string) => number;
+  getCartCount: (userId: string) => number;
 }
 
 export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
-      cart: [],
-      wishlist: [],
+      cart: {},
+      wishlist: {},
       
-      addToCart: (product, quantity, size, color) => {
-        const existingItem = get().cart.find(
+      addToCart: (product, quantity, size, color, userId) => {
+        const userCart = get().cart[userId] || [];
+        const existingItem = userCart.find(
           item => item.product.id === product.id && item.size === size && item.color === color
         );
         
         if (existingItem) {
-          set({
-            cart: get().cart.map(item =>
-              item.id === existingItem.id
-                ? { ...item, quantity: item.quantity + quantity }
-                : item
-            )
-          });
+          set(state => ({
+            cart: {
+              ...state.cart,
+              [userId]: userCart.map(item =>
+                item.id === existingItem.id
+                  ? { ...item, quantity: item.quantity + quantity }
+                  : item
+              ),
+            },
+          }));
         } else {
           const newItem: CartItem = {
             id: `${product.id}-${size}-${color}-${Date.now()}`,
@@ -44,50 +48,84 @@ export const useStore = create<StoreState>()(
             size,
             color
           };
-          set({ cart: [...get().cart, newItem] });
+          set(state => ({
+            cart: {
+              ...state.cart,
+              [userId]: [...userCart, newItem],
+            },
+          }));
         }
       },
       
-      removeFromCart: (id) => {
-        set({ cart: get().cart.filter(item => item.id !== id) });
+      removeFromCart: (id, userId) => {
+        const userCart = get().cart[userId] || [];
+        set(state => ({
+          cart: {
+            ...state.cart,
+            [userId]: userCart.filter(item => item.id !== id),
+          },
+        }));
       },
       
-      updateCartItem: (id, quantity) => {
+      updateCartItem: (id, quantity, userId) => {
+        const userCart = get().cart[userId] || [];
         if (quantity <= 0) {
-          get().removeFromCart(id);
+          get().removeFromCart(id, userId);
           return;
         }
         
-        set({
-          cart: get().cart.map(item =>
-            item.id === id ? { ...item, quantity } : item
-          )
-        });
+        set(state => ({
+          cart: {
+            ...state.cart,
+            [userId]: userCart.map(item =>
+              item.id === id ? { ...item, quantity } : item
+            ),
+          },
+        }));
       },
       
-      clearCart: () => set({ cart: [] }),
+      clearCart: (userId) => set(state => ({
+        cart: {
+          ...state.cart,
+          [userId]: [],
+        },
+      })),
       
-      addToWishlist: (product) => {
-        const exists = get().wishlist.find(item => item.product.id === product.id);
+      addToWishlist: (product, userId) => {
+        const userWishlist = get().wishlist[userId] || [];
+        const exists = userWishlist.find(item => item.product.id === product.id);
         if (!exists) {
           const newItem: WishlistItem = {
             id: `wishlist-${product.id}-${Date.now()}`,
             product
           };
-          set({ wishlist: [...get().wishlist, newItem] });
+          set(state => ({
+            wishlist: {
+              ...state.wishlist,
+              [userId]: [...userWishlist, newItem],
+            },
+          }));
         }
       },
       
-      removeFromWishlist: (id) => {
-        set({ wishlist: get().wishlist.filter(item => item.id !== id) });
+      removeFromWishlist: (id, userId) => {
+        const userWishlist = get().wishlist[userId] || [];
+        set(state => ({
+          wishlist: {
+            ...state.wishlist,
+            [userId]: userWishlist.filter(item => item.id !== id),
+          },
+        }));
       },
       
-      getCartTotal: () => {
-        return get().cart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+      getCartTotal: (userId) => {
+        const userCart = get().cart[userId] || [];
+        return userCart.reduce((total, item) => total + (item.product.price * item.quantity), 0);
       },
       
-      getCartCount: () => {
-        return get().cart.reduce((count, item) => count + item.quantity, 0);
+      getCartCount: (userId) => {
+        const userCart = get().cart[userId] || [];
+        return userCart.reduce((count, item) => count + item.quantity, 0);
       }
     }),
     {
