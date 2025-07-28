@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0] - 2025-07-28
+
+### Added
+- **User Profile Page**:
+  - Created a new page at `/profile` for users to view their profile information.
+  - Added a link to the profile page in the user dropdown menu in the header.
+
+### Fixed
+- **Product Loading Issue**:
+  - Fixed a bug that prevented products from being displayed on the homepage and admin dashboard.
+  - Updated the Supabase RLS policies for the `products` table to allow public read access.
+  - Implemented product fetching and display on the admin dashboard's "Products" tab.
+
 ## [1.1.0] - 2025-01-22
 
 ### Added

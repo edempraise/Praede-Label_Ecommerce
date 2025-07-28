@@ -92,6 +92,9 @@ ElegantShop is a premium e-commerce platform built with Next.js, featuring a mod
   - Payment information
   - Order items breakdown
 
+- **`/profile`** - User Profile
+  - Displays user's email and ID.
+
 #### Admin Pages
 - **`/admin`** - Admin Dashboard
   - Sales statistics
@@ -202,4 +205,4 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ## Database Setup
-Run the migration file `supabase/migrations/create_ecommerce_schema.sql` in your Supabase SQL editor to set up all necessary tables, policies, and sample data.
+Run the migration files in the `supabase/migrations` directory in your Supabase SQL editor in chronological order to set up all necessary tables, policies, and sample data.
