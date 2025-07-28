@@ -15,12 +15,11 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const [isLiked, setIsLiked] = useState(false);
   const { addToCart, addToWishlist, removeFromWishlist, wishlist, isInWishlist } = useStore();
   const { user } = useAuth();
   const { toast } = useToast();
   
-  const isProductInWishlist = user ? isInWishlist(product.id, user.id) : false;
+  const isProductInWishlist = user ? useStore.getState().isInWishlist(product.id, user.id) : false;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
