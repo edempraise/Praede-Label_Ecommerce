@@ -111,6 +111,11 @@ CREATE TABLE IF NOT EXISTS orders (
   updated_at timestamptz DEFAULT now()
 );
 
+-- Create admins Table
+CREATE TABLE admins (
+  user_id uuid PRIMARY KEY REFERENCES users(id)
+);
+
 -- Create users table (extends auth.users)
 CREATE TABLE IF NOT EXISTS users (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
