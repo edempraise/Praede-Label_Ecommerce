@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 const AdminSignInPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -16,37 +16,42 @@ const AdminSignInPage = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
       toast({
-        title: 'Error signing in',
+        title: "Error",
         description: error.message,
-        variant: 'destructive',
+        variant: "destructive",
       });
-    } else if (data.user) {
+    } else if (user) {
       const { data: adminData, error: adminError } = await supabase
-        .from('users')
-        .select('is_admin')
-        .eq('id', data.user.id)
+        .from("users")
+        .select("is_admin, email")
+        .eq("id", user.id)
         .single();
 
-      if (adminError || !adminData.is_admin) {
+      if (adminError) {
+        console.error("Admin check failed:", adminError);
+      }
+      if (adminError || !adminData?.is_admin) {
         toast({
-          title: 'Unauthorized',
-          description: 'You are not authorized to access this page.',
-          variant: 'destructive',
+          title: "Unauthorized",
+          description: "You are not authorized.",
         });
         await supabase.auth.signOut();
       } else {
         toast({
-          title: 'Success!',
-          description: 'Signed in successfully.',
+          title: "Welcome Admin",
+          description: "Signed in successfully.",
         });
-        router.push('/admin');
+        router.push("/admin");
       }
     }
     setLoading(false);
@@ -94,7 +99,7 @@ const AdminSignInPage = () => {
             disabled={loading}
             className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
       </div>
