@@ -1,34 +1,24 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Filter, Search, SlidersHorizontal } from "lucide-react";
-import { motion } from "framer-motion";
-import ProductCard from "@/components/ProductCard";
-import { Product } from "@/types";
-import {
-  getProducts,
-  searchProducts,
-  getProductsByCategory,
-} from "@/lib/supabase";
+import { useState, useEffect } from 'react';
+import { Filter, Search, SlidersHorizontal } from 'lucide-react';
+import { motion } from 'framer-motion';
+import ProductCard from '@/components/ProductCard';
+import { Product } from '@/types';
+import { getProducts, searchProducts, getProductsByCategory } from '@/lib/supabase';
 
 const ProductsPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState({ min: 0, max: 100000 });
-  const [sortBy, setSortBy] = useState("newest");
+  const [sortBy, setSortBy] = useState('newest');
   const [showFilters, setShowFilters] = useState(false);
 
-  const categories = [
-    "all",
-    "Clothing",
-    "Accessories",
-    "Footwear",
-    "Electronics",
-  ];
+  const categories = ['all', 'Clothing', 'Accessories', 'Footwear', 'Electronics'];
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -38,9 +28,9 @@ const ProductsPage = () => {
         const allProducts = await getProducts();
         setProducts(allProducts);
         setFilteredProducts(allProducts);
-      } catch (err: any) {
-        console.error("Supabase error:", err);
-        setError(err.message || "Failed to load products");
+      } catch (err) {
+        console.error('Error loading products:', err);
+        setError('Failed to load products');
         setProducts([]);
         setFilteredProducts([]);
       } finally {
@@ -57,42 +47,35 @@ const ProductsPage = () => {
 
     // Search filter
     if (searchQuery) {
-      filtered = filtered.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.description.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     // Category filter
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter(
-        (product) => product.category === selectedCategory
-      );
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(product => product.category === selectedCategory);
     }
 
     // Price range filter
-    filtered = filtered.filter(
-      (product) =>
-        product.price >= priceRange.min && product.price <= priceRange.max
+    filtered = filtered.filter(product =>
+      product.price >= priceRange.min && product.price <= priceRange.max
     );
 
     // Sort
     switch (sortBy) {
-      case "price-low":
+      case 'price-low':
         filtered.sort((a, b) => a.price - b.price);
         break;
-      case "price-high":
+      case 'price-high':
         filtered.sort((a, b) => b.price - a.price);
         break;
-      case "name":
+      case 'name':
         filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
       default: // newest
-        filtered.sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
+        filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }
 
     setFilteredProducts(filtered);
@@ -103,9 +86,7 @@ const ProductsPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            All Products
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">All Products</h1>
 
           {/* Search and Filters */}
           <div className="flex flex-col lg:flex-row gap-4 mb-6">
@@ -145,21 +126,15 @@ const ProductsPage = () => {
 
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
-          <div
-            className={`w-full lg:w-64 ${
-              showFilters ? "block" : "hidden lg:block"
-            }`}
-          >
+          <div className={`w-full lg:w-64 ${showFilters ? 'block' : 'hidden lg:block'}`}>
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Filters
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
 
               {/* Category Filter */}
               <div className="mb-6">
                 <h4 className="font-medium text-gray-900 mb-3">Category</h4>
                 <div className="space-y-2">
-                  {categories.map((category) => (
+                  {categories.map(category => (
                     <label key={category} className="flex items-center">
                       <input
                         type="radio"
@@ -170,7 +145,7 @@ const ProductsPage = () => {
                         className="mr-2"
                       />
                       <span className="text-gray-700 capitalize">
-                        {category === "all" ? "All Categories" : category}
+                        {category === 'all' ? 'All Categories' : category}
                       </span>
                     </label>
                   ))}
@@ -182,34 +157,20 @@ const ProductsPage = () => {
                 <h4 className="font-medium text-gray-900 mb-3">Price Range</h4>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Min Price
-                    </label>
+                    <label className="block text-sm text-gray-600 mb-1">Min Price</label>
                     <input
                       type="number"
                       value={priceRange.min}
-                      onChange={(e) =>
-                        setPriceRange({
-                          ...priceRange,
-                          min: parseInt(e.target.value) || 0,
-                        })
-                      }
+                      onChange={(e) => setPriceRange({ ...priceRange, min: parseInt(e.target.value) || 0 })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">
-                      Max Price
-                    </label>
+                    <label className="block text-sm text-gray-600 mb-1">Max Price</label>
                     <input
                       type="number"
                       value={priceRange.max}
-                      onChange={(e) =>
-                        setPriceRange({
-                          ...priceRange,
-                          max: parseInt(e.target.value) || 100000,
-                        })
-                      }
+                      onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) || 100000 })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
@@ -219,9 +180,9 @@ const ProductsPage = () => {
               {/* Clear Filters */}
               <button
                 onClick={() => {
-                  setSelectedCategory("all");
+                  setSelectedCategory('all');
                   setPriceRange({ min: 0, max: 100000 });
-                  setSearchQuery("");
+                  setSearchQuery('');
                 }}
                 className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
               >
@@ -241,10 +202,7 @@ const ProductsPage = () => {
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-gray-200 rounded-lg h-80 animate-pulse"
-                  ></div>
+                  <div key={i} className="bg-gray-200 rounded-lg h-80 animate-pulse"></div>
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
@@ -260,9 +218,7 @@ const ProductsPage = () => {
                     </button>
                   </>
                 ) : (
-                  <p className="text-gray-500 text-lg">
-                    No products found matching your criteria.
-                  </p>
+                  <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
                 )}
               </div>
             ) : (

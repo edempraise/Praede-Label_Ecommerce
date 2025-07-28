@@ -5,14 +5,13 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { CheckCircle, CreditCard, MapPin, User } from 'lucide-react';
 import { useStore } from '@/store/useStore';
-import PaymentUpload from '@/components/PaymentUpload';
-import { createOrder, uploadPaymentReceipt } from '@/lib/supabase';
+import { PaystackButton } from 'react-paystack';
+import { createOrder, updateOrderStatus } from '@/lib/supabase';
 
 const CheckoutPage = () => {
   const router = useRouter();
   const { cart, getCartTotal, clearCart } = useStore();
   const [currentStep, setCurrentStep] = useState(1);
-  const [isUploading, setIsUploading] = useState(false);
   const [orderData, setOrderData] = useState({
     customer_name: '',
     customer_email: '',
@@ -22,6 +21,8 @@ const CheckoutPage = () => {
     state: '',
   });
   const [mounted, setMounted] = useState(false);
+
+  const paystackPublicKey = 'pk_test_e16157c8199026191661fd46cc917905bb63c367';
 
   useEffect(() => {
     setMounted(true);
@@ -52,35 +53,26 @@ const CheckoutPage = () => {
     }
   };
 
-  const handleFileUpload = async (file: File) => {
+  const handlePaystackSuccess = async (reference: any) => {
     try {
-      setIsUploading(true);
-      
-      // Create order first
-      const orderData = {
+      const orderPayload = {
         ...orderData,
         items: cart,
         total_amount: getCartTotal(),
-        status: 'pending',
+        status: 'paid',
+        payment_receipt: reference.reference,
       } as const;
-      
-      const order = await createOrder(orderData);
 
-      // Upload payment receipt
-      const receiptUrl = await uploadPaymentReceipt(file, order.id);
-      
-      // Update order status to payment_review
-      await updateOrderStatus(order.id, 'payment_review');
-
-      // Clear cart and redirect
+      const order = await createOrder(orderPayload);
       clearCart();
       router.push(`/orders/${order.id}`);
     } catch (error) {
       console.error('Error creating order:', error);
-      // You might want to show a toast notification here
-    } finally {
-      setIsUploading(false);
     }
+  };
+
+  const handlePaystackClose = () => {
+    console.log('Paystack payment closed');
   };
 
   const steps = [
@@ -310,12 +302,19 @@ const CheckoutPage = () => {
               exit={{ opacity: 0, x: -20 }}
             >
               <h2 className="text-xl font-bold text-gray-900 mb-6">Payment</h2>
-              
-              <PaymentUpload
-                onFileUpload={handleFileUpload}
-                isUploading={isUploading}
-              />
-              
+
+              <div className="text-center">
+                <PaystackButton
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                  publicKey={paystackPublicKey}
+                  amount={getCartTotal() * 100}
+                  email={orderData.customer_email}
+                  text="Pay Now"
+                  onSuccess={handlePaystackSuccess}
+                  onClose={handlePaystackClose}
+                />
+              </div>
+
               <div className="mt-6 flex space-x-4">
                 <button
                   onClick={handlePrevStep}
