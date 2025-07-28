@@ -16,7 +16,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
-  const { addToCart, addToWishlist, wishlist, isInWishlist } = useStore();
+  const { addToCart, addToWishlist, removeFromWishlist, wishlist, isInWishlist } = useStore();
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -40,12 +40,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
       description: `${product.name} has been added to your cart.`,
     });
   };
-
-  const { addToCart, addToWishlist, removeFromWishlist, wishlist, isInWishlist } = useStore();
-  const { user } = useAuth();
-  const { toast } = useToast();
-
-  const isProductInWishlist = user ? isInWishlist(product.id, user.id) : false;
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
