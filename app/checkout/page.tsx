@@ -6,12 +6,15 @@ import { motion } from 'framer-motion';
 import { CheckCircle, CreditCard, MapPin, User } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { PaystackButton } from 'react-paystack';
-import { createOrder, updateOrderStatus } from '@/lib/supabase';
+import { createOrder, updateOrderStatus, uploadPaymentReceipt } from '@/lib/supabase';
+import PaymentUpload from '@/components/PaymentUpload';
 
 const CheckoutPage = () => {
   const router = useRouter();
   const { cart, getCartTotal, clearCart } = useStore();
   const [currentStep, setCurrentStep] = useState(1);
+  const [paymentMethod, setPaymentMethod] = useState<'paystack' | 'bank_transfer' | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [orderData, setOrderData] = useState({
     customer_name: '',
     customer_email: '',
@@ -73,6 +76,32 @@ const CheckoutPage = () => {
 
   const handlePaystackClose = () => {
     console.log('Paystack payment closed');
+  };
+
+  const handleFileUpload = async (file: File) => {
+    try {
+      setIsUploading(true);
+
+      const orderPayload = {
+        ...orderData,
+        items: cart,
+        total_amount: getCartTotal(),
+        status: 'pending',
+      } as const;
+
+      const order = await createOrder(orderPayload);
+
+      const receiptUrl = await uploadPaymentReceipt(file, order.id);
+
+      await updateOrderStatus(order.id, 'payment_review');
+
+      clearCart();
+      router.push(`/orders/${order.id}`);
+    } catch (error) {
+      console.error('Error creating order:', error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const steps = [
@@ -303,17 +332,46 @@ const CheckoutPage = () => {
             >
               <h2 className="text-xl font-bold text-gray-900 mb-6">Payment</h2>
 
-              <div className="text-center">
-                <PaystackButton
-                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-                  publicKey={paystackPublicKey}
-                  amount={getCartTotal() * 100}
-                  email={orderData.customer_email}
-                  text="Pay Now"
-                  onSuccess={handlePaystackSuccess}
-                  onClose={handlePaystackClose}
-                />
+              <div className="space-y-4">
+                <button
+                  onClick={() => setPaymentMethod('paystack')}
+                  className={`w-full p-4 border rounded-lg text-left ${
+                    paymentMethod === 'paystack' ? 'border-blue-600 ring-2 ring-blue-600' : 'border-gray-300'
+                  }`}
+                >
+                  <h3 className="font-semibold">Pay with Paystack</h3>
+                  <p className="text-sm text-gray-600">Pay securely with your card.</p>
+                </button>
+                <button
+                  onClick={() => setPaymentMethod('bank_transfer')}
+                  className={`w-full p-4 border rounded-lg text-left ${
+                    paymentMethod === 'bank_transfer' ? 'border-blue-600 ring-2 ring-blue-600' : 'border-gray-300'
+                  }`}
+                >
+                  <h3 className="font-semibold">Bank Transfer</h3>
+                  <p className="text-sm text-gray-600">Pay by bank transfer and upload your receipt.</p>
+                </button>
               </div>
+
+              {paymentMethod === 'paystack' && (
+                <div className="mt-6 text-center">
+                  <PaystackButton
+                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                    publicKey={paystackPublicKey}
+                    amount={getCartTotal() * 100}
+                    email={orderData.customer_email}
+                    text="Pay Now"
+                    onSuccess={handlePaystackSuccess}
+                    onClose={handlePaystackClose}
+                  />
+                </div>
+              )}
+
+              {paymentMethod === 'bank_transfer' && (
+                <div className="mt-6">
+                  <PaymentUpload onFileUpload={handleFileUpload} isUploading={isUploading} />
+                </div>
+              )}
 
               <div className="mt-6 flex space-x-4">
                 <button
