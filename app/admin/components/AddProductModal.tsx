@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Minus, Upload, Trash2 } from 'lucide-react';
-import { useDropzone } from 'react-dropzone';
-import { supabase } from '@/lib/supabase';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Plus, Minus, Upload, Trash2 } from "lucide-react";
+import { useDropzone } from "react-dropzone";
+import { supabase } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProductFormData {
   name: string;
@@ -31,18 +31,22 @@ interface AddProductModalProps {
   onProductAdded: () => void;
 }
 
-const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalProps) => {
+const AddProductModal = ({
+  isOpen,
+  onClose,
+  onProductAdded,
+}: AddProductModalProps) => {
   const { toast } = useToast();
   const [products, setProducts] = useState<ProductFormData[]>([
     {
-      name: '',
-      description: '',
+      name: "",
+      description: "",
       originalPrice: 0,
       discountPercentage: 0,
-      category: 'Clothing',
+      category: "Clothing",
       quantity: 0,
-      sizes: [''],
-      colors: [''],
+      sizes: [""],
+      colors: [""],
       images: [],
       deliveryOptions: {
         lagosPickup: false,
@@ -56,113 +60,158 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.webp'],
+      "image/*": [".png", ".jpg", ".jpeg", ".webp"],
     },
     multiple: true,
     onDrop: (acceptedFiles, rejectedFiles, event) => {
-      const productIndex = parseInt((event.target as HTMLElement).closest('[data-product-index]')?.getAttribute('data-product-index') || '0');
-      
-      setProducts(prev => prev.map((product, index) => 
-        index === productIndex 
-          ? { ...product, images: [...product.images, ...acceptedFiles] }
-          : product
-      ));
+      if ("target" in event) {
+        const productIndex = parseInt(
+          (event.target as HTMLElement)
+            ?.closest("[data-product-index]")
+            ?.getAttribute("data-product-index") || "0"
+        );
+
+        setProducts((prev) =>
+          prev.map((product, index) =>
+            index === productIndex
+              ? { ...product, images: [...product.images, ...acceptedFiles] }
+              : product
+          )
+        );
+      }
     },
   });
 
   const addProduct = () => {
-    setProducts(prev => [...prev, {
-      name: '',
-      description: '',
-      originalPrice: 0,
-      discountPercentage: 0,
-      category: 'Clothing',
-      quantity: 0,
-      sizes: [''],
-      colors: [''],
-      images: [],
-      deliveryOptions: {
-        lagosPickup: false,
-        lagosDoor: false,
-        outsidePickup: false,
-        outsideDoor: false,
+    setProducts((prev) => [
+      ...prev,
+      {
+        name: "",
+        description: "",
+        originalPrice: 0,
+        discountPercentage: 0,
+        category: "Clothing",
+        quantity: 0,
+        sizes: [""],
+        colors: [""],
+        images: [],
+        deliveryOptions: {
+          lagosPickup: false,
+          lagosDoor: false,
+          outsidePickup: false,
+          outsideDoor: false,
+        },
       },
-    }]);
+    ]);
   };
 
   const removeProduct = (index: number) => {
     if (products.length > 1) {
-      setProducts(prev => prev.filter((_, i) => i !== index));
+      setProducts((prev) => prev.filter((_, i) => i !== index));
     }
   };
 
-  const updateProduct = (index: number, field: keyof ProductFormData, value: any) => {
-    setProducts(prev => prev.map((product, i) => 
-      i === index ? { ...product, [field]: value } : product
-    ));
+  const updateProduct = (
+    index: number,
+    field: keyof ProductFormData,
+    value: any
+  ) => {
+    setProducts((prev) =>
+      prev.map((product, i) =>
+        i === index ? { ...product, [field]: value } : product
+      )
+    );
   };
 
-  const updateDeliveryOption = (productIndex: number, option: keyof ProductFormData['deliveryOptions'], value: boolean) => {
-    setProducts(prev => prev.map((product, i) => 
-      i === productIndex 
-        ? { 
-            ...product, 
-            deliveryOptions: { ...product.deliveryOptions, [option]: value }
-          }
-        : product
-    ));
+  const updateDeliveryOption = (
+    productIndex: number,
+    option: keyof ProductFormData["deliveryOptions"],
+    value: boolean
+  ) => {
+    setProducts((prev) =>
+      prev.map((product, i) =>
+        i === productIndex
+          ? {
+              ...product,
+              deliveryOptions: { ...product.deliveryOptions, [option]: value },
+            }
+          : product
+      )
+    );
   };
 
-  const addArrayItem = (productIndex: number, field: 'sizes' | 'colors') => {
-    setProducts(prev => prev.map((product, i) => 
-      i === productIndex 
-        ? { ...product, [field]: [...product[field], ''] }
-        : product
-    ));
+  const addArrayItem = (productIndex: number, field: "sizes" | "colors") => {
+    setProducts((prev) =>
+      prev.map((product, i) =>
+        i === productIndex
+          ? { ...product, [field]: [...product[field], ""] }
+          : product
+      )
+    );
   };
 
-  const updateArrayItem = (productIndex: number, field: 'sizes' | 'colors', itemIndex: number, value: string) => {
-    setProducts(prev => prev.map((product, i) => 
-      i === productIndex 
-        ? { 
-            ...product, 
-            [field]: product[field].map((item, j) => j === itemIndex ? value : item)
-          }
-        : product
-    ));
+  const updateArrayItem = (
+    productIndex: number,
+    field: "sizes" | "colors",
+    itemIndex: number,
+    value: string
+  ) => {
+    setProducts((prev) =>
+      prev.map((product, i) =>
+        i === productIndex
+          ? {
+              ...product,
+              [field]: product[field].map((item, j) =>
+                j === itemIndex ? value : item
+              ),
+            }
+          : product
+      )
+    );
   };
 
-  const removeArrayItem = (productIndex: number, field: 'sizes' | 'colors', itemIndex: number) => {
-    setProducts(prev => prev.map((product, i) => 
-      i === productIndex 
-        ? { 
-            ...product, 
-            [field]: product[field].filter((_, j) => j !== itemIndex)
-          }
-        : product
-    ));
+  const removeArrayItem = (
+    productIndex: number,
+    field: "sizes" | "colors",
+    itemIndex: number
+  ) => {
+    setProducts((prev) =>
+      prev.map((product, i) =>
+        i === productIndex
+          ? {
+              ...product,
+              [field]: product[field].filter((_, j) => j !== itemIndex),
+            }
+          : product
+      )
+    );
   };
 
   const removeImage = (productIndex: number, imageIndex: number) => {
-    setProducts(prev => prev.map((product, i) => 
-      i === productIndex 
-        ? { ...product, images: product.images.filter((_, j) => j !== imageIndex) }
-        : product
-    ));
+    setProducts((prev) =>
+      prev.map((product, i) =>
+        i === productIndex
+          ? {
+              ...product,
+              images: product.images.filter((_, j) => j !== imageIndex),
+            }
+          : product
+      )
+    );
   };
 
   const uploadImages = async (images: File[]): Promise<string[]> => {
     const uploadPromises = images.map(async (image) => {
       const fileName = `products/${Date.now()}-${image.name}`;
       const { data, error } = await supabase.storage
-        .from('products')
+        .from("products")
         .upload(fileName, image);
 
       if (error) throw error;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('products')
-        .getPublicUrl(fileName);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("products").getPublicUrl(fileName);
 
       return publicUrl;
     });
@@ -177,20 +226,26 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
     try {
       for (const product of products) {
         // Validate required fields
-        if (!product.name || !product.description || product.originalPrice <= 0) {
+        if (
+          !product.name ||
+          !product.description ||
+          product.originalPrice <= 0
+        ) {
           toast({
-            title: 'Validation Error',
-            description: 'Please fill in all required fields for each product.',
-            variant: 'destructive',
+            title: "Validation Error",
+            description: "Please fill in all required fields for each product.",
+            variant: "destructive",
           });
           return;
         }
 
         // Upload images
-        const imageUrls = product.images.length > 0 ? await uploadImages(product.images) : [];
+        const imageUrls =
+          product.images.length > 0 ? await uploadImages(product.images) : [];
 
         // Calculate discounted price
-        const discountedPrice = product.originalPrice * (1 - product.discountPercentage / 100);
+        const discountedPrice =
+          product.originalPrice * (1 - product.discountPercentage / 100);
 
         // Prepare product data
         const productData = {
@@ -199,53 +254,53 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
           price: Math.round(discountedPrice),
           original_price: product.originalPrice,
           category: product.category,
-          size: product.sizes.filter(s => s.trim() !== ''),
-          color: product.colors.filter(c => c.trim() !== ''),
+          size: product.sizes.filter((s) => s.trim() !== ""),
+          color: product.colors.filter((c) => c.trim() !== ""),
           images: imageUrls,
           in_stock: product.quantity > 0,
           featured: false,
         };
 
         // Insert product
-        const { error } = await supabase
-          .from('products')
-          .insert(productData);
+        const { error } = await supabase.from("products").insert(productData);
 
         if (error) throw error;
       }
 
       toast({
-        title: 'Success!',
+        title: "Success!",
         description: `${products.length} product(s) added successfully.`,
       });
 
       onProductAdded();
       onClose();
-      
+
       // Reset form
-      setProducts([{
-        name: '',
-        description: '',
-        originalPrice: 0,
-        discountPercentage: 0,
-        category: 'Clothing',
-        quantity: 0,
-        sizes: [''],
-        colors: [''],
-        images: [],
-        deliveryOptions: {
-          lagosPickup: false,
-          lagosDoor: false,
-          outsidePickup: false,
-          outsideDoor: false,
+      setProducts([
+        {
+          name: "",
+          description: "",
+          originalPrice: 0,
+          discountPercentage: 0,
+          category: "Clothing",
+          quantity: 0,
+          sizes: [""],
+          colors: [""],
+          images: [],
+          deliveryOptions: {
+            lagosPickup: false,
+            lagosDoor: false,
+            outsidePickup: false,
+            outsideDoor: false,
+          },
         },
-      }]);
+      ]);
     } catch (error) {
-      console.error('Error adding products:', error);
+      console.error("Error adding products:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to add products. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to add products. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -256,16 +311,19 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+              className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity z-40 pointer-events-auto"
               onClick={onClose}
             />
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
 
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
               &#8203;
             </span>
 
@@ -273,7 +331,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6"
+              className="z-50 relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6"
             >
               <div className="absolute top-0 right-0 pt-4 pr-4">
                 <button
@@ -286,7 +344,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                 </button>
               </div>
 
-              <div className="sm:flex sm:items-start">
+              <div className="sm:flex sm:items-start relative z-50">
                 <div className="w-full">
                   <div className="text-center mb-6">
                     <h3 className="text-lg leading-6 font-medium text-gray-900">
@@ -299,7 +357,11 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
 
                   <form onSubmit={handleSubmit} className="space-y-8">
                     {products.map((product, productIndex) => (
-                      <div key={productIndex} className="border border-gray-200 rounded-lg p-6" data-product-index={productIndex}>
+                      <div
+                        key={productIndex}
+                        className="border border-gray-200 rounded-lg p-6"
+                        data-product-index={productIndex}
+                      >
                         <div className="flex items-center justify-between mb-4">
                           <h4 className="text-md font-medium text-gray-900">
                             Product {productIndex + 1}
@@ -325,7 +387,13 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                               <input
                                 type="text"
                                 value={product.name}
-                                onChange={(e) => updateProduct(productIndex, 'name', e.target.value)}
+                                onChange={(e) =>
+                                  updateProduct(
+                                    productIndex,
+                                    "name",
+                                    e.target.value
+                                  )
+                                }
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 required
                               />
@@ -337,7 +405,13 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                               </label>
                               <textarea
                                 value={product.description}
-                                onChange={(e) => updateProduct(productIndex, 'description', e.target.value)}
+                                onChange={(e) =>
+                                  updateProduct(
+                                    productIndex,
+                                    "description",
+                                    e.target.value
+                                  )
+                                }
                                 rows={3}
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 required
@@ -350,7 +424,13 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                               </label>
                               <select
                                 value={product.category}
-                                onChange={(e) => updateProduct(productIndex, 'category', e.target.value)}
+                                onChange={(e) =>
+                                  updateProduct(
+                                    productIndex,
+                                    "category",
+                                    e.target.value
+                                  )
+                                }
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               >
                                 <option value="Clothing">Clothing</option>
@@ -370,7 +450,13 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                               <input
                                 type="number"
                                 value={product.originalPrice}
-                                onChange={(e) => updateProduct(productIndex, 'originalPrice', parseFloat(e.target.value) || 0)}
+                                onChange={(e) =>
+                                  updateProduct(
+                                    productIndex,
+                                    "originalPrice",
+                                    parseFloat(e.target.value) || 0
+                                  )
+                                }
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 required
                                 min="0"
@@ -385,7 +471,13 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                               <input
                                 type="number"
                                 value={product.discountPercentage}
-                                onChange={(e) => updateProduct(productIndex, 'discountPercentage', parseFloat(e.target.value) || 0)}
+                                onChange={(e) =>
+                                  updateProduct(
+                                    productIndex,
+                                    "discountPercentage",
+                                    parseFloat(e.target.value) || 0
+                                  )
+                                }
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 min="0"
                                 max="100"
@@ -393,7 +485,11 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                               />
                               {product.discountPercentage > 0 && (
                                 <p className="mt-1 text-sm text-green-600">
-                                  Sale Price: ₦{(product.originalPrice * (1 - product.discountPercentage / 100)).toFixed(2)}
+                                  Sale Price: ₦
+                                  {(
+                                    product.originalPrice *
+                                    (1 - product.discountPercentage / 100)
+                                  ).toFixed(2)}
                                 </p>
                               )}
                             </div>
@@ -405,7 +501,13 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                               <input
                                 type="number"
                                 value={product.quantity}
-                                onChange={(e) => updateProduct(productIndex, 'quantity', parseInt(e.target.value) || 0)}
+                                onChange={(e) =>
+                                  updateProduct(
+                                    productIndex,
+                                    "quantity",
+                                    parseInt(e.target.value) || 0
+                                  )
+                                }
                                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 min="0"
                               />
@@ -420,17 +522,33 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                           </label>
                           <div className="space-y-2">
                             {product.sizes.map((size, sizeIndex) => (
-                              <div key={sizeIndex} className="flex items-center space-x-2">
+                              <div
+                                key={sizeIndex}
+                                className="flex items-center space-x-2"
+                              >
                                 <input
                                   type="text"
                                   value={size}
-                                  onChange={(e) => updateArrayItem(productIndex, 'sizes', sizeIndex, e.target.value)}
+                                  onChange={(e) =>
+                                    updateArrayItem(
+                                      productIndex,
+                                      "sizes",
+                                      sizeIndex,
+                                      e.target.value
+                                    )
+                                  }
                                   className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                   placeholder="e.g., S, M, L, XL"
                                 />
                                 <button
                                   type="button"
-                                  onClick={() => removeArrayItem(productIndex, 'sizes', sizeIndex)}
+                                  onClick={() =>
+                                    removeArrayItem(
+                                      productIndex,
+                                      "sizes",
+                                      sizeIndex
+                                    )
+                                  }
                                   className="text-red-600 hover:text-red-800"
                                 >
                                   <Minus className="w-4 h-4" />
@@ -439,7 +557,9 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                             ))}
                             <button
                               type="button"
-                              onClick={() => addArrayItem(productIndex, 'sizes')}
+                              onClick={() =>
+                                addArrayItem(productIndex, "sizes")
+                              }
                               className="flex items-center space-x-1 text-blue-600 hover:text-blue-800"
                             >
                               <Plus className="w-4 h-4" />
@@ -455,17 +575,33 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                           </label>
                           <div className="space-y-2">
                             {product.colors.map((color, colorIndex) => (
-                              <div key={colorIndex} className="flex items-center space-x-2">
+                              <div
+                                key={colorIndex}
+                                className="flex items-center space-x-2"
+                              >
                                 <input
                                   type="text"
                                   value={color}
-                                  onChange={(e) => updateArrayItem(productIndex, 'colors', colorIndex, e.target.value)}
+                                  onChange={(e) =>
+                                    updateArrayItem(
+                                      productIndex,
+                                      "colors",
+                                      colorIndex,
+                                      e.target.value
+                                    )
+                                  }
                                   className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                   placeholder="e.g., Red, Blue, Black"
                                 />
                                 <button
                                   type="button"
-                                  onClick={() => removeArrayItem(productIndex, 'colors', colorIndex)}
+                                  onClick={() =>
+                                    removeArrayItem(
+                                      productIndex,
+                                      "colors",
+                                      colorIndex
+                                    )
+                                  }
                                   className="text-red-600 hover:text-red-800"
                                 >
                                   <Minus className="w-4 h-4" />
@@ -474,7 +610,9 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                             ))}
                             <button
                               type="button"
-                              onClick={() => addArrayItem(productIndex, 'colors')}
+                              onClick={() =>
+                                addArrayItem(productIndex, "colors")
+                              }
                               className="flex items-center space-x-1 text-blue-600 hover:text-blue-800"
                             >
                               <Plus className="w-4 h-4" />
@@ -498,7 +636,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                               Drag & drop images here, or click to select
                             </p>
                           </div>
-                          
+
                           {product.images.length > 0 && (
                             <div className="mt-4 grid grid-cols-3 gap-4">
                               {product.images.map((image, imageIndex) => (
@@ -510,7 +648,9 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                                   />
                                   <button
                                     type="button"
-                                    onClick={() => removeImage(productIndex, imageIndex)}
+                                    onClick={() =>
+                                      removeImage(productIndex, imageIndex)
+                                    }
                                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                                   >
                                     <X className="w-3 h-3" />
@@ -528,13 +668,23 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                           </label>
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <h4 className="text-sm font-medium text-gray-900 mb-2">Lagos Delivery</h4>
+                              <h4 className="text-sm font-medium text-gray-900 mb-2">
+                                Lagos Delivery
+                              </h4>
                               <div className="space-y-2">
                                 <label className="flex items-center">
                                   <input
                                     type="checkbox"
-                                    checked={product.deliveryOptions.lagosPickup}
-                                    onChange={(e) => updateDeliveryOption(productIndex, 'lagosPickup', e.target.checked)}
+                                    checked={
+                                      product.deliveryOptions.lagosPickup
+                                    }
+                                    onChange={(e) =>
+                                      updateDeliveryOption(
+                                        productIndex,
+                                        "lagosPickup",
+                                        e.target.checked
+                                      )
+                                    }
                                     className="mr-2"
                                   />
                                   <span className="text-sm">Pickup</span>
@@ -543,7 +693,13 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                                   <input
                                     type="checkbox"
                                     checked={product.deliveryOptions.lagosDoor}
-                                    onChange={(e) => updateDeliveryOption(productIndex, 'lagosDoor', e.target.checked)}
+                                    onChange={(e) =>
+                                      updateDeliveryOption(
+                                        productIndex,
+                                        "lagosDoor",
+                                        e.target.checked
+                                      )
+                                    }
                                     className="mr-2"
                                   />
                                   <span className="text-sm">Door Delivery</span>
@@ -551,13 +707,23 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                               </div>
                             </div>
                             <div>
-                              <h4 className="text-sm font-medium text-gray-900 mb-2">Outside Lagos</h4>
+                              <h4 className="text-sm font-medium text-gray-900 mb-2">
+                                Outside Lagos
+                              </h4>
                               <div className="space-y-2">
                                 <label className="flex items-center">
                                   <input
                                     type="checkbox"
-                                    checked={product.deliveryOptions.outsidePickup}
-                                    onChange={(e) => updateDeliveryOption(productIndex, 'outsidePickup', e.target.checked)}
+                                    checked={
+                                      product.deliveryOptions.outsidePickup
+                                    }
+                                    onChange={(e) =>
+                                      updateDeliveryOption(
+                                        productIndex,
+                                        "outsidePickup",
+                                        e.target.checked
+                                      )
+                                    }
                                     className="mr-2"
                                   />
                                   <span className="text-sm">Pickup</span>
@@ -565,8 +731,16 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                                 <label className="flex items-center">
                                   <input
                                     type="checkbox"
-                                    checked={product.deliveryOptions.outsideDoor}
-                                    onChange={(e) => updateDeliveryOption(productIndex, 'outsideDoor', e.target.checked)}
+                                    checked={
+                                      product.deliveryOptions.outsideDoor
+                                    }
+                                    onChange={(e) =>
+                                      updateDeliveryOption(
+                                        productIndex,
+                                        "outsideDoor",
+                                        e.target.checked
+                                      )
+                                    }
                                     className="mr-2"
                                   />
                                   <span className="text-sm">Door Delivery</span>
@@ -604,7 +778,9 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }: AddProductModalPro
                           {loading ? (
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           ) : (
-                            `Add ${products.length} Product${products.length > 1 ? 's' : ''}`
+                            `Add ${products.length} Product${
+                              products.length > 1 ? "s" : ""
+                            }`
                           )}
                         </button>
                       </div>
