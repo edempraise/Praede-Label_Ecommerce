@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { Search, ShoppingCart, Heart, Menu, X, User, ArrowLeft } from 'lucide-react';
+import { Search, ShoppingCart, Heart, Menu, X, User, ArrowLeft, Package } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/hooks/useAuth';
 import AuthModal from '@/components/AuthModal';
@@ -138,6 +138,12 @@ const Header = () => {
           {/* Icons */}
           <div className="flex items-center space-x-4">
             <button
+              onClick={() => router.push('/products')}
+              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+            >
+              <Package className="w-6 h-6" />
+            </button>
+            <button
               onClick={() => {
                 if (handleAuthRequired('wishlist')) {
                   router.push('/wishlist');
@@ -188,12 +194,14 @@ const Header = () => {
                       Admin Profile
                     </Link>
                   )}
-                  <button
-                    onClick={handleAdminPortalClick}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Admin Portal
-                  </button>
+                  {user.user_metadata.is_admin && (
+                    <button
+                      onClick={handleAdminPortalClick}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Admin Portal
+                    </button>
+                  )}
                   <Link
                     href="/orders"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
