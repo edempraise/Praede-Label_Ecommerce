@@ -1,21 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
-import {
-  Search,
-  ShoppingCart,
-  Heart,
-  Menu,
-  X,
-  User,
-  ArrowLeft,
-} from "lucide-react";
-import { useStore } from "@/store/useStore";
-import { useAuth } from "@/hooks/useAuth";
-import AuthModal from "@/components/AuthModal";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import { Search, ShoppingCart, Heart, Menu, X, User, ArrowLeft, Package } from 'lucide-react';
+import { useStore } from '@/store/useStore';
+import { useAuth } from '@/hooks/useAuth';
+import AuthModal from '@/components/AuthModal';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Header = () => {
   const router = useRouter();
@@ -129,117 +121,137 @@ const Header = () => {
               </span>
             </Link>
 
-            {/* Search Bar - Desktop */}
-            <div className="hidden md:flex flex-1 max-w-lg mx-8">
-              <div className="relative w-full">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+          {/* Search Bar - Desktop */}
+          <div className="hidden md:flex flex-1 max-w-lg mx-8">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
             </div>
+          </div>
 
-            {/* Icons */}
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => {
-                  if (handleAuthRequired("wishlist")) {
-                    router.push("/wishlist");
-                  }
-                }}
-                className="relative p-2 text-gray-700 hover:text-red-600 transition-colors"
-              >
-                <Heart className="w-6 h-6" />
-                {userWishlist.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {userWishlist.length}
-                  </span>
-                )}  
-              </button>
-              <button
-                onClick={() => {
-                  if (handleAuthRequired("cart")) {
-                    router.push("/cart");
-                  }
-                }}
-                className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
-              >
-                <ShoppingCart className="w-6 h-6" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </button>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-6">
+            <Link href="/products" className="text-gray-700 hover:text-blue-600 transition-colors">
+              Products
+            </Link>
+            <Link href="/categories" className="text-gray-700 hover:text-blue-600 transition-colors">
+              Categories
+            </Link>
+            <Link href="/about" className="text-gray-700 hover:text-blue-600 transition-colors">
+              About
+            </Link>
+            <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition-colors">
+              Contact
+            </Link>
+          </div>
 
-              {user ? (
-                <div className="relative group">
-                  <button className="p-2 text-gray-700 hover:text-blue-600 transition-colors">
-                    <User className="w-6 h-6" />
-                  </button>
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+          {/* Icons */}
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => router.push('/products')}
+              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+            >
+              <Package className="w-6 h-6" />
+            </button>
+            <button
+              onClick={() => {
+                if (handleAuthRequired('wishlist')) {
+                  router.push('/wishlist');
+                }
+              }}
+              className="relative p-2 text-gray-700 hover:text-red-600 transition-colors"
+            >
+              <Heart className="w-6 h-6" />
+              {wishlist.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {wishlist.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                if (handleAuthRequired('cart')) {
+                  router.push('/cart');
+                }
+              }}
+              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+            >
+              <ShoppingCart className="w-6 h-6" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+            
+            {user ? (
+              <div className="relative group">
+                <button className="p-2 text-gray-700 hover:text-blue-600 transition-colors">
+                  <User className="w-6 h-6" />
+                </button>
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Profile
+                  </Link>
+                  {user.user_metadata.is_admin && (
                     <Link
-                      href="/profile"
+                      href="/admin/profile"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
-                      Profile
+                      Admin Profile
                     </Link>
-                    {user.user_metadata.is_admin && (
-                      <Link
-                        href="/admin/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Admin Profile
-                      </Link>
-                    )}
+                  )}
+                  {user.user_metadata.is_admin && (
                     <button
                       onClick={handleAdminPortalClick}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Admin Portal
                     </button>
-                    <Link
-                      href="/orders"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      My Orders
-                    </Link>
-                    <button
-                      onClick={handleSignOut}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
+                  )}
+                  <Link
+                    href="/orders"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    My Orders
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Sign Out
+                  </button>
                 </div>
-              ) : (
-                <button
-                  onClick={async () => {
-                    await signOut();
-                    router.push("/auth/login");
-                  }}
-                  className="p-2 text-gray-700 hover:text-blue-600 transition-colors"
-                >
-                  <User className="w-6 h-6" />
-                </button>
-              )}
-
+              </div>
+            ) : (
               <button
-                onClick={toggleMenu}
-                className="md:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors"
+                onClick={async () => {
+                  await signOut();
+                  router.push('/auth/login');
+                }}
+                className="p-2 text-gray-700 hover:text-blue-600 transition-colors"
               >
-                {isMenuOpen ? (
-                  <X className="w-6 h-6" />
-                ) : (
-                  <Menu className="w-6 h-6" />
-                )}
+                <User className="w-6 h-6" />
               </button>
-            </div>
+            )}
+            
+            <button
+              onClick={toggleMenu}
+              className="md:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors"
+            >
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
+        </div>
 
           {/* Mobile Search */}
           <div className="md:hidden pb-4">
