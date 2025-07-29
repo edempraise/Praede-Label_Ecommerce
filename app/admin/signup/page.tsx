@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useToast } from '@/hooks/use-toast';
 
 const AdminSignUpPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -18,21 +18,23 @@ const AdminSignUpPage = () => {
       email,
       password,
       options: {
-        data: { is_admin: true }, // goes into raw_user_meta_data
+        data: {
+          is_admin: true,
+        },
       },
     });
 
-    if (!error && data.user) {
-      // Manually promote to admin (backend call recommended)
-      await supabase
-        .from("users")
-        .update({ is_admin: true })
-        .eq("id", data.user.id);
-
+    if (error) {
       toast({
-        title: "Success!",
-        description:
-          "Admin account created. Check your email for verification.",
+        title: 'Error signing up',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else if (data.user) {
+      await supabase.from('users').update({ is_admin: true }).eq('id', data.user.id);
+      toast({
+        title: 'Success!',
+        description: 'Admin account created. Please check your email for verification.',
       });
     }
     setLoading(false);
@@ -80,7 +82,7 @@ const AdminSignUpPage = () => {
             disabled={loading}
             className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            {loading ? "Signing up..." : "Sign Up"}
+            {loading ? 'Signing up...' : 'Sign Up'}
           </button>
         </form>
       </div>

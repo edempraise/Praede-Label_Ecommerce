@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
 
 const CartPage = () => {
-  const { cart, removeFromCart, updateCartItem, getCartTotal } = useStore();
+  const { cart, removeFromCart, updateCartItem, getCartTotal, currentUserId } = useStore();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -17,7 +17,9 @@ const CartPage = () => {
 
   if (!mounted) return null;
 
-  if (cart.length === 0) {
+  const userCart = currentUserId ? cart[currentUserId] || [] : [];
+
+  if (userCart.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -41,7 +43,7 @@ const CartPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
-          <p className="text-gray-600 mt-2">{cart.length} items in your cart</p>
+          <p className="text-gray-600 mt-2">{userCart.length} items in your cart</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -49,7 +51,7 @@ const CartPage = () => {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <AnimatePresence>
-                {cart.map((item) => (
+                {userCart.map((item) => (
                   <motion.div
                     key={item.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -89,7 +91,7 @@ const CartPage = () => {
                       <div className="flex items-center space-x-3">
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => updateCartItem(item.id, item.quantity - 1)}
+                            onClick={() => currentUserId && updateCartItem(item.id, item.quantity - 1, currentUserId)}
                             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                           >
                             <Minus className="w-4 h-4" />
@@ -98,7 +100,7 @@ const CartPage = () => {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => updateCartItem(item.id, item.quantity + 1)}
+                            onClick={() => currentUserId && updateCartItem(item.id, item.quantity + 1, currentUserId)}
                             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                           >
                             <Plus className="w-4 h-4" />
@@ -110,7 +112,7 @@ const CartPage = () => {
                         </div>
                         
                         <button
-                          onClick={() => removeFromCart(item.id)}
+                          onClick={() => currentUserId && removeFromCart(item.id, currentUserId)}
                           className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
                         >
                           <Trash2 className="w-5 h-5" />
@@ -131,7 +133,7 @@ const CartPage = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
-                  <span>₦{getCartTotal().toLocaleString()}</span>
+                  <span>₦{currentUserId && getCartTotal(currentUserId).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
@@ -140,7 +142,7 @@ const CartPage = () => {
                 <div className="border-t pt-3">
                   <div className="flex justify-between text-lg font-bold text-gray-900">
                     <span>Total</span>
-                    <span>₦{getCartTotal().toLocaleString()}</span>
+                    <span>₦{currentUserId && getCartTotal(currentUserId).toLocaleString()}</span>
                   </div>
                 </div>
               </div>

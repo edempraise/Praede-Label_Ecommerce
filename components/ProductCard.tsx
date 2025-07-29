@@ -1,64 +1,88 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { Heart, ShoppingCart, Star } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Product } from '@/types';
-import { useStore } from '@/store/useStore';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import Image from "next/image";
+import Link from "next/link";
+import { Heart, ShoppingCart, Star } from "lucide-react";
+import { motion } from "framer-motion";
+import { Product } from "@/types";
+import { useStore } from "@/store/useStore";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const [isLiked, setIsLiked] = useState(false);
-  const { addToCart, addToWishlist, wishlist } = useStore();
-  const { user } = useAuth();
+  const {
+    addToCart,
+    addToWishlist,
+    removeFromWishlist,
+    wishlist,
+    isInWishlist,
+    currentUserId,
+  } = useStore();
   const { toast } = useToast();
-  
-  const isInWishlist = wishlist.some(item => item.product.id === product.id);
+
+  const isProductInWishlist = currentUserId
+    ? isInWishlist(product.id, currentUserId)
+    : false;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    
-    if (!user) {
+
+    if (!currentUserId) {
       toast({
-        title: 'Login Required',
-        description: 'Please login to add items to your cart.',
-        variant: 'destructive',
+        title: "Login Required",
+        description: "Please login to add items to your cart.",
+        variant: "destructive",
       });
       return;
     }
-    
-    addToCart(product, 1, product.size[0] || 'M', product.color[0] || 'Default');
+
+    addToCart(
+      product,
+      1,
+      product.size[0] || "M",
+      product.color[0] || "Default",
+      currentUserId
+    );
     toast({
-      title: 'Added to Cart',
+      title: "Added to Cart",
       description: `${product.name} has been added to your cart.`,
     });
   };
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
-    
-    if (!user) {
+
+    if (!currentUserId) {
       toast({
-        title: 'Login Required',
-        description: 'Please login to add items to your wishlist.',
-        variant: 'destructive',
+        title: "Login Required",
+        description: "Please login to add items to your wishlist.",
+        variant: "destructive",
       });
       return;
     }
-    
-    addToWishlist(product);
-    setIsLiked(true);
-    toast({
-      title: 'Added to Wishlist',
-      description: `${product.name} has been added to your wishlist.`,
-    });
+
+    if (isProductInWishlist) {
+      const wishlistForUser = wishlist[currentUserId] || [];
+      const wishlistItem = wishlistForUser.find(
+        (item) => item.product.id === product.id
+      );
+      if (wishlistItem) {
+        removeFromWishlist(wishlistItem.id, currentUserId);
+        toast({
+          title: "Removed from Wishlist",
+          description: `${product.name} has been removed from your wishlist.`,
+        });
+      }
+    } else {
+      addToWishlist(product, currentUserId);
+      toast({
+        title: "Added to Wishlist",
+        description: `${product.name} has been added to your wishlist.`,
+      });
+    }
   };
 
   return (
@@ -70,38 +94,48 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <Link href={`/products/${product.id}`}>
         <div className="relative aspect-square overflow-hidden">
           <Image
-            src={product.images[0] || '/placeholder-product.jpg'}
+            src={product.images[0] || "/placeholder-product.jpg"}
             alt={product.name}
             fill
             className="object-cover transition-transform duration-300 hover:scale-105"
           />
-          
+
           {product.original_price && product.original_price > product.price && (
             <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-semibold">
-              -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
+              -
+              {Math.round(
+                ((product.original_price - product.price) /
+                  product.original_price) *
+                  100
+              )}
+              %
             </div>
           )}
-          
+
           <div className="absolute top-2 right-2 flex flex-col space-y-2">
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={handleWishlist}
-              className={`p-2 rounded-full ${isInWishlist ? 'bg-red-500 text-white' : 'bg-white text-gray-600'} hover:bg-red-500 hover:text-white transition-colors shadow-md`}
+              className={`p-2 rounded-full ${
+                isProductInWishlist
+                  ? "bg-red-500 text-white"
+                  : "bg-white text-gray-600"
+              } hover:bg-red-500 hover:text-white transition-colors shadow-md`}
             >
               <Heart className="w-4 h-4" />
             </motion.button>
           </div>
         </div>
       </Link>
-      
+
       <div className="p-4">
         <Link href={`/products/${product.id}`}>
           <h3 className="font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
             {product.name}
           </h3>
         </Link>
-        
+
         <div className="flex items-center mb-2">
           <div className="flex items-center">
             {[...Array(5)].map((_, i) => (
@@ -110,19 +144,20 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
           <span className="text-sm text-gray-600 ml-2">(4.5)</span>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <span className="font-bold text-lg text-gray-900">
               ₦{product.price.toLocaleString()}
             </span>
-            {product.original_price && product.original_price > product.price && (
-              <span className="text-sm text-gray-500 line-through">
-                ₦{product.original_price.toLocaleString()}
-              </span>
-            )}
+            {product.original_price &&
+              product.original_price > product.price && (
+                <span className="text-sm text-gray-500 line-through">
+                  ₦{product.original_price.toLocaleString()}
+                </span>
+              )}
           </div>
-          
+
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -133,7 +168,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <span>Add</span>
           </motion.button>
         </div>
-        
+
         <div className="mt-3 flex flex-wrap gap-1">
           {product.color.slice(0, 3).map((color) => (
             <span
