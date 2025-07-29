@@ -20,8 +20,9 @@ const Header = () => {
   const { cart, wishlist, currentUserId, getCartCount } = useStore();
   const { user, loading, signOut } = useAuth();
   const cartCount = user ? getCartCount(user.id) : 0;
-  const userWishlist = currentUserId ? wishlist[currentUserId] || [] : [];
   const [mounted, setMounted] = useState(false);
+  const userWishlist = currentUserId ? wishlist[currentUserId] || [] : [];
+
 
   useEffect(() => {
     setMounted(true);
@@ -118,22 +119,6 @@ const Header = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link href="/products" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Products
-            </Link>
-            <Link href="/categories" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Categories
-            </Link>
-            <Link href="/about" className="text-gray-700 hover:text-blue-600 transition-colors">
-              About
-            </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Contact
-            </Link>
           </div>
 
           {/* Icons */}
