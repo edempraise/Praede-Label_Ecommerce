@@ -14,6 +14,7 @@ import {
 } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import PaymentUpload from "@/components/PaymentUpload";
+import { saveShippingInfo, getShippingInfo } from "@/lib/supabase";
 
 const CheckoutPage = () => {
   const router = useRouter();
@@ -34,6 +35,7 @@ const CheckoutPage = () => {
     city: "",
     state: "",
   });
+  const [saveInfo, setSaveInfo] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const paystackPublicKey = "pk_test_e16157c8199026191661fd46cc917905bb63c367";
@@ -43,8 +45,25 @@ const CheckoutPage = () => {
   }, []);
 
   useEffect(() => {
-    if (mounted && user && userCart.length === 0) {
-      router.push("/cart");
+    if (mounted && user) {
+      if (userCart.length === 0) {
+        router.push("/cart");
+      }
+      // Fetch shipping info
+      getShippingInfo(user.id).then((info) => {
+        if (info) {
+          setOrderData({
+            customer_name: info.customer_name || "",
+            customer_email: user.email || "",
+            customer_phone: info.customer_phone || "",
+            shipping_address: info.shipping_address || "",
+            city: info.city || "",
+            state: info.state || "",
+          });
+        } else {
+          setOrderData((prev) => ({ ...prev, customer_email: user.email || "" }));
+        }
+      });
     }
   }, [user, userCart, router, mounted]);
 
@@ -59,7 +78,29 @@ const CheckoutPage = () => {
     });
   };
 
-  const handleNextStep = () => {
+  const handleNextStep = async () => {
+    if (currentStep === 2 && saveInfo && user) {
+      try {
+        await saveShippingInfo(user.id, {
+          customer_name: orderData.customer_name,
+          customer_phone: orderData.customer_phone,
+          shipping_address: orderData.shipping_address,
+          city: orderData.city,
+          state: orderData.state,
+        });
+        toast({
+          title: "Shipping Info Saved",
+          description: "Your shipping information has been saved for future orders.",
+        });
+      } catch (error) {
+        console.error("Error saving shipping info:", error);
+        toast({
+          title: "Error",
+          description: "Could not save shipping information.",
+          variant: "destructive",
+        });
+      }
+    }
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     }
@@ -380,7 +421,22 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
-              <div className="flex space-x-4">
+              <div className="flex items-center justify-between mt-6">
+                <div className="flex items-center">
+                  <input
+                    id="save-info"
+                    type="checkbox"
+                    checked={saveInfo}
+                    onChange={(e) => setSaveInfo(e.target.checked)}
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="save-info" className="ml-2 block text-sm text-gray-900">
+                    Save this information for next time
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex space-x-4 mt-6">
                 <button
                   onClick={handlePrevStep}
                   className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
