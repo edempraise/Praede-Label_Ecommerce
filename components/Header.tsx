@@ -135,22 +135,6 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link href="/products" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Products
-            </Link>
-            <Link href="/categories" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Categories
-            </Link>
-            <Link href="/about" className="text-gray-700 hover:text-blue-600 transition-colors">
-              About
-            </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Contact
-            </Link>
-          </div>
-
           {/* Icons */}
           <div className="flex items-center space-x-4">
             <button
@@ -168,11 +152,11 @@ const Header = () => {
               className="relative p-2 text-gray-700 hover:text-red-600 transition-colors"
             >
               <Heart className="w-6 h-6" />
-              {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {wishlist.length}
-                </span>
-              )}
+  {userWishlist.length > 0 && (
+    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+      {userWishlist.length}
+    </span>
+  )}
             </button>
             <button
               onClick={() => {
