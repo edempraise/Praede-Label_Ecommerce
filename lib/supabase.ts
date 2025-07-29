@@ -59,6 +59,16 @@ export const getAdminCount = async (): Promise<number> => {
   return count || 0;
 };
 
+export const getUsers = async (): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+};
+
 export const getFeaturedProducts = async (): Promise<Product[]> => {
   const { data, error } = await supabase
     .from('products')

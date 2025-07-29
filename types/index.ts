@@ -41,6 +41,7 @@ export interface Order {
   payment_receipt?: string;
   created_at: string;
   updated_at: string;
+  user: User;
 }
 
 export interface Category {
@@ -54,5 +55,6 @@ export interface User {
   id: string;
   email: string;
   is_admin: boolean;
+  is_verified: boolean;
   created_at: string;
 }

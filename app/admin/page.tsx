@@ -3,34 +3,44 @@
 import { useState, useEffect } from 'react';
 import { Package, ShoppingCart, Users, TrendingUp, Eye, Edit, Trash2, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Order, Product } from '@/types';
-import { getOrders, updateOrderStatus } from '@/lib/supabase';
+import { Order, Product, User } from '@/types';
+import { getOrders, updateOrderStatus, getProducts, getUsers } from '@/lib/supabase';
 import AddProductModal from './components/AddProductModal';
 
 const AdminDashboard = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('orders');
   const [showAddProductModal, setShowAddProductModal] = useState(false);
 
   useEffect(() => {
-    const loadOrders = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const allOrders = await getOrders();
+        const [allOrders, allProducts, allUsers] = await Promise.all([
+          getOrders(),
+          getProducts(),
+          getUsers(),
+        ]);
         setOrders(allOrders);
+        setProducts(allProducts);
+        setUsers(allUsers);
       } catch (err) {
-        console.error('Error loading orders:', err);
-        setError('Failed to load orders');
+        console.error('Error loading data:', err);
+        setError('Failed to load data');
         setOrders([]);
+        setProducts([]);
+        setUsers([]);
       } finally {
         setLoading(false);
       }
     };
 
-    loadOrders();
+    loadData();
   }, []);
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
@@ -63,10 +73,10 @@ const AdminDashboard = () => {
   };
 
   const stats = [
-    { title: 'Total Orders', value: '1,234', icon: ShoppingCart, color: 'bg-blue-500' },
-    { title: 'Total Revenue', value: '₦5,678,900', icon: TrendingUp, color: 'bg-green-500' },
-    { title: 'Total Products', value: '456', icon: Package, color: 'bg-purple-500' },
-    { title: 'Total Customers', value: '789', icon: Users, color: 'bg-orange-500' },
+    { title: 'Total Orders', value: orders.length, icon: ShoppingCart, color: 'bg-blue-500' },
+    { title: 'Total Revenue', value: `₦${orders.reduce((acc, order) => acc + order.total_amount, 0).toLocaleString()}`, icon: TrendingUp, color: 'bg-green-500' },
+    { title: 'Total Products', value: products.length, icon: Package, color: 'bg-purple-500' },
+    { title: 'Total Customers', value: users.length, icon: Users, color: 'bg-orange-500' },
   ];
 
   return (
@@ -249,8 +259,8 @@ const AdminDashboard = () => {
 
         {/* Products Tab */}
         {activeTab === 'products' && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Products</h2>
               <button 
                 onClick={() => setShowAddProductModal(true)}
@@ -259,15 +269,128 @@ const AdminDashboard = () => {
                 Add Product
               </button>
             </div>
-            <p className="text-gray-600">Product management will be implemented here.</p>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Product
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Price
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      In Stock
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {products.map((product) => (
+                    <tr key={product.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <img className="h-10 w-10 rounded-full" src={product.images[0]} alt="" />
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {product.name}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {product.category}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ₦{product.price.toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          product.in_stock ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {product.in_stock ? 'In Stock' : 'Out of Stock'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button className="text-blue-600 hover:text-blue-900">
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button className="text-yellow-600 hover:text-yellow-900">
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button className="text-red-600 hover:text-red-900">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
         {/* Customers Tab */}
         {activeTab === 'customers' && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Customers</h2>
-            <p className="text-gray-600">Customer management will be implemented here.</p>
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Customers</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Customer
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Verified
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {users.map((user) => (
+                    <tr key={user.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {user.email}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          user.is_verified ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {user.is_verified ? 'Verified' : 'Not Verified'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button className="text-blue-600 hover:text-blue-900">
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button className="text-yellow-600 hover:text-yellow-900">
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
