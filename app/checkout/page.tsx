@@ -12,12 +12,14 @@ import {
   updateOrderStatus,
   uploadPaymentReceipt,
 } from "@/lib/supabase";
+import { useToast } from "@/hooks/use-toast";
 import PaymentUpload from "@/components/PaymentUpload";
 
 const CheckoutPage = () => {
   const router = useRouter();
   const { cart, getCartTotal, clearCart } = useStore();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const userCart = user ? cart[user.id] || [] : [];
   const [paymentMethod, setPaymentMethod] = useState<
@@ -86,7 +88,11 @@ const CheckoutPage = () => {
 
       const order = await createOrder(orderPayload);
       clearCart(user.id);
-      router.push(`/orders/${order.id}`);
+      toast({
+        title: "Order Placed!",
+        description: "Your order has been successfully placed.",
+      });
+      router.push("/orders");
     } catch (error) {
       console.error("Error creating order:", error);
     }
@@ -119,7 +125,11 @@ const CheckoutPage = () => {
       await updateOrderStatus(order.id, "payment_review");
 
       clearCart(user.id);
-      router.push(`/orders/${order.id}`);
+      toast({
+        title: "Order Placed!",
+        description: "Your order has been successfully placed.",
+      });
+      router.push("/orders");
     } catch (error) {
       console.error("Error creating order:", error);
     } finally {
@@ -141,7 +151,11 @@ const CheckoutPage = () => {
 
       const order = await createOrder(orderPayload);
       clearCart(user.id);
-      router.push(`/orders/${order.id}`);
+      toast({
+        title: "Order Placed!",
+        description: "Your order has been successfully placed.",
+      });
+      router.push("/orders");
     } catch (error) {
       console.error("Error creating order:", error);
     }
