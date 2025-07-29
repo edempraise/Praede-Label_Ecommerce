@@ -123,42 +123,46 @@ const Header = () => {
 
           {/* Icons */}
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => router.push('/products')}
-              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
-            >
-              <Package className="w-6 h-6" />
-            </button>
-            <button
-              onClick={() => {
-                if (handleAuthRequired('wishlist')) {
-                  router.push('/wishlist');
-                }
-              }}
-              className="relative p-2 text-gray-700 hover:text-red-600 transition-colors"
-            >
-              <Heart className="w-6 h-6" />
-              {userWishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {userWishlist.length}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={() => {
-                if (handleAuthRequired('cart')) {
-                  router.push('/cart');
-                }
-              }}
-              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
-            >
-              <ShoppingCart className="w-6 h-6" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
-            </button>
+            {!user?.user_metadata.is_admin && (
+              <>
+                <button
+                  onClick={() => router.push('/products')}
+                  className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+                >
+                  <Package className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={() => {
+                    if (handleAuthRequired('wishlist')) {
+                      router.push('/wishlist');
+                    }
+                  }}
+                  className="relative p-2 text-gray-700 hover:text-red-600 transition-colors"
+                >
+                  <Heart className="w-6 h-6" />
+                  {userWishlist.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {userWishlist.length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    if (handleAuthRequired('cart')) {
+                      router.push('/cart');
+                    }
+                  }}
+                  className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+                >
+                  <ShoppingCart className="w-6 h-6" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </>
+            )}
             
             {user ? (
               <div className="relative group">
@@ -166,34 +170,29 @@ const Header = () => {
                   <User className="w-6 h-6" />
                 </button>
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                  <Link
-                    href="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Profile
-                  </Link>
-                  {user.user_metadata.is_admin && (
+                  {user.user_metadata.is_admin ? (
                     <Link
-                      href="/admin/profile"
+                      href="/admin"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
-                      Admin Profile
+                      Admin Dashboard
                     </Link>
+                  ) : (
+                    <>
+                      <Link
+                        href="/profile"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Profile
+                      </Link>
+                      <Link
+                        href="/orders"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        My Orders
+                      </Link>
+                    </>
                   )}
-                  {user.user_metadata.is_admin && (
-                    <button
-                      onClick={handleAdminPortalClick}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Admin Portal
-                    </button>
-                  )}
-                  <Link
-                    href="/orders"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    My Orders
-                  </Link>
                   <button
                     onClick={handleSignOut}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
