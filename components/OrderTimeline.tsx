@@ -1,7 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Check, Clock, Package, Truck, Star } from 'lucide-react';
+import { Check, Truck, Star } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface OrderTimelineProps {
   status: string;
@@ -9,34 +10,27 @@ interface OrderTimelineProps {
 }
 
 const OrderTimeline = ({ status, createdAt }: OrderTimelineProps) => {
+  const [animatedTitle, setAnimatedTitle] = useState('');
+  const title = 'Order Timeline';
+
+  useEffect(() => {
+    let i = 0;
+    const interval = setInterval(() => {
+      setAnimatedTitle(title.substring(0, i));
+      i++;
+      if (i > title.length) {
+        clearInterval(interval);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
   const steps = [
-    {
-      id: 'pending',
-      title: 'Order Placed',
-      description: 'Your order has been received',
-      icon: Clock,
-      color: 'bg-blue-500',
-    },
-    {
-      id: 'payment_review',
-      title: 'Payment Review',
-      description: 'Verifying your payment',
-      icon: Check,
-      color: 'bg-yellow-500',
-    },
     {
       id: 'paid',
       title: 'Payment Confirmed',
       description: 'Payment has been verified',
       icon: Check,
       color: 'bg-green-500',
-    },
-    {
-      id: 'preparing',
-      title: 'Preparing Order',
-      description: 'Your order is being prepared',
-      icon: Package,
-      color: 'bg-purple-500',
     },
     {
       id: 'shipped',
@@ -63,7 +57,7 @@ const OrderTimeline = ({ status, createdAt }: OrderTimelineProps) => {
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-6">Order Timeline</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-6">{animatedTitle}</h3>
       
       <div className="space-y-4">
         {steps.map((step, index) => {
