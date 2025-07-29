@@ -17,9 +17,10 @@ const Header = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const { cart, wishlist, getCartCount } = useStore();
+  const { cart, wishlist, currentUserId, getCartCount } = useStore();
   const { user, loading, signOut } = useAuth();
   const cartCount = user ? getCartCount(user.id) : 0;
+  const userWishlist = currentUserId ? wishlist[currentUserId] || [] : [];
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -152,9 +153,9 @@ const Header = () => {
               className="relative p-2 text-gray-700 hover:text-red-600 transition-colors"
             >
               <Heart className="w-6 h-6" />
-              {wishlist.length > 0 && (
+              {userWishlist.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {wishlist.length}
+                  {userWishlist.length}
                 </span>
               )}
             </button>
