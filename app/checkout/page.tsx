@@ -35,10 +35,10 @@ const CheckoutPage = () => {
   }, []);
 
   useEffect(() => {
-    if (mounted && userCart.length === 0) {
+    if (mounted && user && userCart.length === 0) {
       router.push('/cart');
     }
-  }, [userCart, router, mounted]);
+  }, [user, userCart, router, mounted]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setOrderData({
