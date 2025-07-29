@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { Search, ShoppingCart, Heart, Menu, X, User, ArrowLeft } from 'lucide-react';
+import { Search, ShoppingCart, Heart, Menu, X, User, ArrowLeft, Package } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/hooks/useAuth';
 import AuthModal from '@/components/AuthModal';
@@ -13,14 +13,17 @@ const Header = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
+  const [authModalMode, setAuthModalMode] = useState<"login" | "signup">(
+    "login"
+  );
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const { cart, wishlist, getCartCount } = useStore();
+  const { cart, wishlist, currentUserId, getCartCount } = useStore();
   const { user, loading, signOut } = useAuth();
   const cartCount = user ? getCartCount(user.id) : 0;
   const [mounted, setMounted] = useState(false);
+  const userWishlist = currentUserId ? wishlist[currentUserId] || [] : [];
 
   useEffect(() => {
     setMounted(true);
@@ -37,39 +40,45 @@ const Header = () => {
     }
   }, [user, loading, mounted]);
 
-  const handleAuthRequired = useCallback((action: string) => {
-    if (!user) {
-      setAuthModalMode('login');
-      setShowAuthModal(true);
-      return false;
-    }
-    return true;
-  }, [user]);
+  const handleAuthRequired = useCallback(
+    (action: string) => {
+      if (!user) {
+        setAuthModalMode("login");
+        setShowAuthModal(true);
+        return false;
+      }
+      return true;
+    },
+    [user]
+  );
 
   const handleProfileClick = () => {
     if (!user) {
-      router.push('/auth/login');
+      router.push("/auth/login");
     } else {
       // Navigate to user profile or show dropdown
-      router.push('/account');
+      router.push("/account");
     }
   };
 
   const handleAdminPortalClick = async () => {
     await signOut();
-    router.push('/admin/signin');
+    router.push("/admin/signin");
   };
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/');
+    router.push("/");
   };
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   if (!mounted || loading) return null;
 
-  const isAuthPage = pathname.startsWith('/auth') || pathname.startsWith('/admin/signin') || pathname.startsWith('/admin/signup');
+  const isAuthPage =
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/admin/signin") ||
+    pathname.startsWith("/admin/signup");
 
   if (isAuthPage) {
     return (
@@ -80,9 +89,14 @@ const Header = () => {
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">E</span>
               </div>
-              <span className="text-xl font-bold text-gray-900">ElegantShop</span>
+              <span className="text-xl font-bold text-gray-900">
+                ElegantShop
+              </span>
             </Link>
-            <Link href="/" className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors">
+            <Link
+              href="/"
+              className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
+            >
               <ArrowLeft className="w-5 h-5" />
               <span>Back to Home</span>
             </Link>
@@ -95,15 +109,17 @@ const Header = () => {
   return (
     <>
       <header className="bg-white shadow-lg sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">E</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900">ElegantShop</span>
-          </Link>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">E</span>
+              </div>
+              <span className="text-xl font-bold text-gray-900">
+                ElegantShop
+              </span>
+            </Link>
 
           {/* Search Bar - Desktop */}
           <div className="hidden md:flex flex-1 max-w-lg mx-8">
@@ -119,24 +135,14 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link href="/products" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Products
-            </Link>
-            <Link href="/categories" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Categories
-            </Link>
-            <Link href="/about" className="text-gray-700 hover:text-blue-600 transition-colors">
-              About
-            </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Contact
-            </Link>
-          </div>
-
           {/* Icons */}
           <div className="flex items-center space-x-4">
+            <button
+              onClick={() => router.push('/products')}
+              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+            >
+              <Package className="w-6 h-6" />
+            </button>
             <button
               onClick={() => {
                 if (handleAuthRequired('wishlist')) {
@@ -146,11 +152,11 @@ const Header = () => {
               className="relative p-2 text-gray-700 hover:text-red-600 transition-colors"
             >
               <Heart className="w-6 h-6" />
-              {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {wishlist.length}
-                </span>
-              )}
+  {userWishlist.length > 0 && (
+    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+      {userWishlist.length}
+    </span>
+  )}
             </button>
             <button
               onClick={() => {
@@ -188,12 +194,14 @@ const Header = () => {
                       Admin Profile
                     </Link>
                   )}
-                  <button
-                    onClick={handleAdminPortalClick}
-                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Admin Portal
-                  </button>
+                  {user.user_metadata.is_admin && (
+                    <button
+                      onClick={handleAdminPortalClick}
+                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      Admin Portal
+                    </button>
+                  )}
                   <Link
                     href="/orders"
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -229,47 +237,59 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Search */}
-        <div className="md:hidden pb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+          {/* Mobile Search */}
+          <div className="md:hidden pb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-t"
-          >
-            <div className="px-4 py-2 space-y-2">
-              <Link href="/products" className="block py-2 text-gray-700 hover:text-blue-600 transition-colors">
-                Products
-              </Link>
-              <Link href="/categories" className="block py-2 text-gray-700 hover:text-blue-600 transition-colors">
-                Categories
-              </Link>
-              <Link href="/about" className="block py-2 text-gray-700 hover:text-blue-600 transition-colors">
-                About
-              </Link>
-              <Link href="/contact" className="block py-2 text-gray-700 hover:text-blue-600 transition-colors">
-                Contact
-              </Link>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden bg-white border-t"
+            >
+              <div className="px-4 py-2 space-y-2">
+                <Link
+                  href="/products"
+                  className="block py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                >
+                  Products
+                </Link>
+                <Link
+                  href="/categories"
+                  className="block py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                >
+                  Categories
+                </Link>
+                <Link
+                  href="/about"
+                  className="block py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                >
+                  About
+                </Link>
+                <Link
+                  href="/contact"
+                  className="block py-2 text-gray-700 hover:text-blue-600 transition-colors"
+                >
+                  Contact
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Auth Modal */}
@@ -292,7 +312,10 @@ const Header = () => {
                 onClick={() => setShowLoginPrompt(false)}
               />
 
-              <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+              <span
+                className="hidden sm:inline-block sm:align-middle sm:h-screen"
+                aria-hidden="true"
+              >
                 &#8203;
               </span>
 
@@ -312,7 +335,8 @@ const Header = () => {
                     </h3>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
-                        Create an account to save your favorites, track orders, and get personalized recommendations.
+                        Create an account to save your favorites, track orders,
+                        and get personalized recommendations.
                       </p>
                     </div>
                   </div>
@@ -323,7 +347,7 @@ const Header = () => {
                     className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:col-start-2 sm:text-sm"
                     onClick={() => {
                       setShowLoginPrompt(false);
-                      setAuthModalMode('signup');
+                      setAuthModalMode("signup");
                       setShowAuthModal(true);
                     }}
                   >
@@ -334,7 +358,7 @@ const Header = () => {
                     className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:col-start-1 sm:text-sm"
                     onClick={() => {
                       setShowLoginPrompt(false);
-                      setAuthModalMode('login');
+                      setAuthModalMode("login");
                       setShowAuthModal(true);
                     }}
                   >
