@@ -6,19 +6,18 @@ import Image from 'next/image';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store/useStore';
-import { useAuth } from '@/hooks/useAuth';
 
 const CartPage = () => {
-  const { cart, removeFromCart, updateCartItem, getCartTotal } = useStore();
-  const { user } = useAuth();
+  const { cart, removeFromCart, updateCartItem, getCartTotal, currentUserId } = useStore();
   const [mounted, setMounted] = useState(false);
-  const userCart = user ? cart[user.id] || [] : [];
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   if (!mounted) return null;
+
+  const userCart = currentUserId ? cart[currentUserId] || [] : [];
 
   if (userCart.length === 0) {
     return (
@@ -92,7 +91,7 @@ const CartPage = () => {
                       <div className="flex items-center space-x-3">
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => user && updateCartItem(item.id, item.quantity - 1, user.id)}
+                            onClick={() => currentUserId && updateCartItem(item.id, item.quantity - 1, currentUserId)}
                             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                           >
                             <Minus className="w-4 h-4" />
@@ -101,7 +100,7 @@ const CartPage = () => {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => user && updateCartItem(item.id, item.quantity + 1, user.id)}
+                            onClick={() => currentUserId && updateCartItem(item.id, item.quantity + 1, currentUserId)}
                             className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                           >
                             <Plus className="w-4 h-4" />
@@ -113,7 +112,7 @@ const CartPage = () => {
                         </div>
                         
                         <button
-                          onClick={() => user && removeFromCart(item.id, user.id)}
+                          onClick={() => currentUserId && removeFromCart(item.id, currentUserId)}
                           className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
                         >
                           <Trash2 className="w-5 h-5" />
@@ -134,7 +133,7 @@ const CartPage = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal</span>
-                  <span>₦{user && getCartTotal(user.id).toLocaleString()}</span>
+                  <span>₦{currentUserId && getCartTotal(currentUserId).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
@@ -143,7 +142,7 @@ const CartPage = () => {
                 <div className="border-t pt-3">
                   <div className="flex justify-between text-lg font-bold text-gray-900">
                     <span>Total</span>
-                    <span>₦{user && getCartTotal(user.id).toLocaleString()}</span>
+                    <span>₦{currentUserId && getCartTotal(currentUserId).toLocaleString()}</span>
                   </div>
                 </div>
               </div>
