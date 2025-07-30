@@ -21,6 +21,27 @@ export const getProducts = async (): Promise<Product[]> => {
   return data || [];
 };
 
+export const updateProduct = async (productId: string, updates: Partial<Product>): Promise<Product> => {
+  const { data, error } = await supabase
+    .from('products')
+    .update(updates)
+    .eq('id', productId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const deleteProduct = async (productId: string): Promise<void> => {
+  const { error } = await supabase
+    .from('products')
+    .delete()
+    .eq('id', productId);
+
+  if (error) throw error;
+};
+
 // Shipping Information
 export const getShippingInfo = async (userId: string) => {
   const { data, error } = await supabase
