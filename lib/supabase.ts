@@ -33,6 +33,18 @@ export const updateProduct = async (productId: string, updates: Partial<Product>
   return data;
 };
 
+export const updateProductVisibility = async (productId: string, is_visible: boolean): Promise<Product> => {
+  const { data, error } = await supabase
+    .from('products')
+    .update({ is_visible })
+    .eq('id', productId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
 export const deleteProduct = async (productId: string): Promise<void> => {
   const { error } = await supabase
     .from('products')
@@ -141,6 +153,18 @@ export const getUsers = async (): Promise<any[]> => {
 
   if (error) throw error;
   return data || [];
+};
+
+export const updateUserStatus = async (userId: string, status: 'active' | 'inactive'): Promise<any> => {
+  const { data, error } = await supabase
+    .from('users')
+    .update({ status })
+    .eq('id', userId)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 };
 
 
