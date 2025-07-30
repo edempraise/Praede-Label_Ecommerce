@@ -8,6 +8,7 @@ import { useStore } from '@/store/useStore';
 import { useAuth } from '@/hooks/useAuth';
 import AuthModal from '@/components/AuthModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 const Header = () => {
   const router = useRouter();
@@ -19,6 +20,7 @@ const Header = () => {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const { cart, wishlist, currentUserId, getCartCount } = useStore();
   const { user, loading, signOut } = useAuth();
+  const { settings } = useSettingsStore();
   const cartCount = user ? getCartCount(user.id) : 0;
   const [mounted, setMounted] = useState(false);
   const userWishlist = currentUserId ? wishlist[currentUserId] || [] : [];
@@ -101,10 +103,22 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">E</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900">ElegantShop</span>
+            {settings.logo?.type === 'image' ? (
+              <img src={settings.logo.src} alt="Logo" className="h-8 w-auto" />
+            ) : (
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{
+                  background:
+                    settings.logo?.background?.type === 'gradient'
+                      ? `linear-gradient(to ${settings.logo.background.direction}, ${settings.logo.background.colors.join(', ')})`
+                      : settings.logo?.background?.color,
+                }}
+              >
+                <span className="text-white font-bold text-lg">{settings.logo?.text}</span>
+              </div>
+            )}
+            <span className="text-xl font-bold text-gray-900">{settings.siteName}</span>
           </Link>
 
           {/* Search Bar - Desktop */}

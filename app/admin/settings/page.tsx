@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Edit, Save } from 'lucide-react';
 import Link from 'next/link';
 import { getSettings, updateSetting, uploadLogo } from '@/lib/supabase';
 
@@ -9,6 +9,7 @@ const SettingsPage = () => {
   const [settings, setSettings] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState<any>({});
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -38,6 +39,19 @@ const SettingsPage = () => {
     } catch (error) {
       console.error('Error saving setting:', error);
       alert('Failed to save setting');
+    }
+  };
+
+  const handleGeneralSave = async () => {
+    try {
+      await Promise.all(
+        Object.keys(settings).map((key) => updateSetting(key, settings[key]))
+      );
+      alert('All settings saved successfully!');
+      setEditMode({});
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Failed to save settings');
     }
   };
 
@@ -91,12 +105,13 @@ const SettingsPage = () => {
                   value={settings.siteName || ''}
                   onChange={(e) => handleSettingChange('siteName', e.target.value)}
                   className="flex-1 block w-full rounded-none rounded-l-md sm:text-sm border-gray-300"
+                  disabled={!editMode.siteName}
                 />
                 <button
-                  onClick={() => handleSave('siteName')}
+                  onClick={() => setEditMode({ ...editMode, siteName: !editMode.siteName })}
                   className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 text-sm"
                 >
-                  Save
+                  {editMode.siteName ? <Save className="w-5 h-5" /> : <Edit className="w-5 h-5" />}
                 </button>
               </div>
             </div>
@@ -112,6 +127,7 @@ const SettingsPage = () => {
                     checked={settings.logo?.type === 'text'}
                     onChange={() => handleSettingChange('logo', { ...settings.logo, type: 'text' })}
                     className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                    disabled={!editMode.logo}
                   />
                   <label htmlFor="logo-type-text" className="ml-3 block text-sm font-medium text-gray-700">
                     Text
@@ -131,6 +147,7 @@ const SettingsPage = () => {
                         value={settings.logo?.text || ''}
                         onChange={(e) => handleSettingChange('logo', { ...settings.logo, text: e.target.value })}
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                        disabled={!editMode.logo}
                       />
                     </div>
                   </div>
@@ -143,6 +160,7 @@ const SettingsPage = () => {
                     checked={settings.logo?.type === 'image'}
                     onChange={() => handleSettingChange('logo', { ...settings.logo, type: 'image' })}
                     className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                    disabled={!editMode.logo}
                   />
                   <label htmlFor="logo-type-image" className="ml-3 block text-sm font-medium text-gray-700">
                     Image
@@ -161,16 +179,18 @@ const SettingsPage = () => {
                           accept="image/png, image/jpeg"
                           onChange={handleLogoImageUpload}
                           className="text-sm"
+                          disabled={!editMode.logo}
                         />
                       </div>
                     </div>
                   </div>
                 )}
                 <button
-                  onClick={() => handleSave('logo')}
+                  onClick={() => setEditMode({ ...editMode, logo: !editMode.logo })}
                   className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
                 >
-                  Save Logo Settings
+                  {editMode.logo ? <Save className="w-5 h-5 mr-2" /> : <Edit className="w-5 h-5 mr-2" />}
+                  {editMode.logo ? 'Save Logo Settings' : 'Edit Logo Settings'}
                 </button>
               </div>
             </div>
@@ -187,6 +207,7 @@ const SettingsPage = () => {
                       checked={settings.logo?.background?.type === 'plain'}
                       onChange={() => handleSettingChange('logo', { ...settings.logo, background: { ...settings.logo.background, type: 'plain' } })}
                       className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                      disabled={!editMode.logo}
                     />
                     <label htmlFor="bg-type-plain" className="ml-3 block text-sm font-medium text-gray-700">
                       Plain Color
@@ -199,6 +220,7 @@ const SettingsPage = () => {
                         value={settings.logo?.background?.color || '#ffffff'}
                         onChange={(e) => handleSettingChange('logo', { ...settings.logo, background: { ...settings.logo.background, color: e.target.value } })}
                         className="w-16 h-8 border-gray-300 rounded-md"
+                        disabled={!editMode.logo}
                       />
                     </div>
                   )}
@@ -211,6 +233,7 @@ const SettingsPage = () => {
                       checked={settings.logo?.background?.type === 'gradient'}
                       onChange={() => handleSettingChange('logo', { ...settings.logo, background: { ...settings.logo.background, type: 'gradient' } })}
                       className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300"
+                      disabled={!editMode.logo}
                     />
                     <label htmlFor="bg-type-gradient" className="ml-3 block text-sm font-medium text-gray-700">
                       Gradient
@@ -224,6 +247,7 @@ const SettingsPage = () => {
                           value={settings.logo?.background?.direction || 'br'}
                           onChange={(e) => handleSettingChange('logo', { ...settings.logo, background: { ...settings.logo.background, direction: e.target.value } })}
                           className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                          disabled={!editMode.logo}
                         >
                           <option value="t">Top</option>
                           <option value="tr">Top Right</option>
@@ -248,6 +272,7 @@ const SettingsPage = () => {
                                 handleSettingChange('logo', { ...settings.logo, background: { ...settings.logo.background, colors: newColors } });
                               }}
                               className="w-16 h-8 border-gray-300 rounded-md"
+                              disabled={!editMode.logo}
                             />
                             {index > 1 && (
                               <button
@@ -257,6 +282,7 @@ const SettingsPage = () => {
                                   handleSettingChange('logo', { ...settings.logo, background: { ...settings.logo.background, colors: newColors } });
                                 }}
                                 className="ml-2 text-red-500"
+                                  disabled={!editMode.logo}
                               >
                                 Remove
                               </button>
@@ -269,6 +295,7 @@ const SettingsPage = () => {
                             handleSettingChange('logo', { ...settings.logo, background: { ...settings.logo.background, colors: newColors } });
                           }}
                           className="mt-2 text-sm text-blue-600"
+                          disabled={!editMode.logo}
                         >
                           + Add Color
                         </button>
@@ -276,14 +303,32 @@ const SettingsPage = () => {
                     </div>
                   )}
                   <button
-                    onClick={() => handleSave('logo')}
+                    onClick={() => setEditMode({ ...editMode, logo: !editMode.logo })}
                     className="mt-4 inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
                   >
-                    Save Background Settings
+                    {editMode.logo ? <Save className="w-5 h-5 mr-2" /> : <Edit className="w-5 h-5 mr-2" />}
+                    {editMode.logo ? 'Save Background Settings' : 'Edit Background Settings'}
                   </button>
                 </div>
               </div>
             )}
+          </div>
+          <div className="pt-5">
+            <div className="flex justify-end">
+              <button
+                type="button"
+                className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                onClick={handleGeneralSave}
+                className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Save All Settings
+              </button>
+            </div>
           </div>
         </div>
       </div>
