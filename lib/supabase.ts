@@ -42,6 +42,49 @@ export const deleteProduct = async (productId: string): Promise<void> => {
   if (error) throw error;
 };
 
+export const uploadLogo = async (file: File): Promise<string> => {
+  const fileName = `logos/${Date.now()}.${file.name.split('.').pop()}`;
+
+  const { data, error } = await supabase.storage
+    .from('logos')
+    .upload(fileName, file);
+
+  if (error) throw error;
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('logos')
+    .getPublicUrl(fileName);
+
+  return publicUrl;
+};
+
+export const getSettings = async (): Promise<any> => {
+  const { data, error } = await supabase
+    .from('settings')
+    .select('*');
+
+  if (error) throw error;
+
+  const settings = data.reduce((acc, setting) => {
+    acc[setting.key] = setting.value;
+    return acc;
+  }, {} as any);
+
+  return settings;
+};
+
+export const updateSetting = async (key: string, value: any): Promise<any> => {
+  const { data, error } = await supabase
+    .from('settings')
+    .update({ value })
+    .eq('key', key)
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+};
+
 // Shipping Information
 export const getShippingInfo = async (userId: string) => {
   const { data, error } = await supabase
