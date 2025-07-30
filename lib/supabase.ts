@@ -43,19 +43,19 @@ export const deleteProduct = async (productId: string): Promise<void> => {
 };
 
 export const uploadLogo = async (file: File): Promise<string> => {
-  const fileName = `logos/${Date.now()}.${file.name.split('.').pop()}`;
+  const fileName = `logo.${file.name.split('.').pop()}`;
 
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from('logos')
-    .upload(fileName, file);
+    .upload(fileName, file, { upsert: true }); // overwrite old logo
 
   if (error) throw error;
 
-  const { data: { publicUrl } } = supabase.storage
+  const { data } = supabase.storage
     .from('logos')
     .getPublicUrl(fileName);
 
-  return publicUrl;
+  return data.publicUrl;
 };
 
 export const getSettings = async (): Promise<any> => {

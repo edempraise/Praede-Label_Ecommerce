@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { getSettings, updateSetting } from '@/lib/supabase';
+import { getSettings, updateSetting, uploadLogo } from '@/lib/supabase';
 
 const SettingsPage = () => {
   const [settings, setSettings] = useState<any>({});
@@ -41,16 +41,19 @@ const SettingsPage = () => {
     }
   };
 
-  const handleLogoImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       const logoUrl = await uploadLogo(file);
-      handleSettingChange('logo', { ...settings.logo, src: logoUrl });
+      handleSettingChange("logo", { ...settings.logo, src: logoUrl });
+      await handleSave("logo"); // 👈 optionally save immediately
     } catch (error) {
-      console.error('Error uploading logo:', error);
-      alert('Failed to upload logo');
+      console.error("Error uploading logo:", error);
+      alert("Failed to upload logo");
     }
   };
 
