@@ -202,18 +202,18 @@ const AddProductModal = ({
 
   const uploadImages = async (images: File[]): Promise<string[]> => {
     const uploadPromises = images.map(async (image) => {
-      const fileName = `products/${Date.now()}-${image.name}`;
+      const fileName = `${Date.now()}-${image.name}`;
       const { data, error } = await supabase.storage
         .from("products")
-        .upload(fileName, image);
+        .upload(fileName, image, { upsert: true });
 
       if (error) throw error;
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("products").getPublicUrl(fileName);
+      const { data: { publicUrl } } = supabase.storage
+      .from("products")
+      .getPublicUrl(fileName);
 
-      return publicUrl;
+    return publicUrl;
     });
 
     return Promise.all(uploadPromises);
