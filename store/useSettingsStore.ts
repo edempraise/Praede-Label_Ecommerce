@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 import { getSettings } from '@/lib/supabase';
 
 interface SettingsState {

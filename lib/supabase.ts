@@ -43,11 +43,20 @@ export const deleteProduct = async (productId: string): Promise<void> => {
 };
 
 export const uploadLogo = async (file: File): Promise<string> => {
-  const fileName = `logo.${file.name.split('.').pop()}`;
+  const fileName = `logo-${Date.now()}.${file.name.split('.').pop()}`;
 
-  const { error } = await supabase.storage
+  // Try update first
+  let { error } = await supabase.storage
     .from('logos')
-    .upload(fileName, file, { upsert: true }); // overwrite old logo
+    .update(fileName, file, { contentType: file.type });
+
+  if (error && error.message.includes('not found')) {
+    // If file doesn't exist, fallback to upload
+    const res = await supabase.storage
+      .from('logos')
+      .upload(fileName, file, { contentType: file.type });
+    error = res.error;
+  }
 
   if (error) throw error;
 
@@ -127,11 +136,13 @@ export const getUsers = async (): Promise<any[]> => {
   const { data, error } = await supabase
     .from('users')
     .select('*')
+    .eq('is_admin', false) // hides admins in CustomersPage
     .order('created_at', { ascending: false });
 
   if (error) throw error;
   return data || [];
 };
+
 
 export const getFeaturedProducts = async (): Promise<Product[]> => {
   const { data, error } = await supabase
