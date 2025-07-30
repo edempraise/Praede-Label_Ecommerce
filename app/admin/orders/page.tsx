@@ -49,6 +49,7 @@ const OrdersPage = () => {
       case 'payment_review': return 'bg-blue-100 text-blue-800';
       case 'paid': return 'bg-green-100 text-green-800';
       case 'preparing': return 'bg-purple-100 text-purple-800';
+      case 'ready_for_delivery': return 'bg-indigo-100 text-indigo-800';
       case 'shipped': return 'bg-orange-100 text-orange-800';
       case 'delivered': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -119,7 +120,9 @@ const OrdersPage = () => {
                   {orders.map((order) => (
                     <tr key={order.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        #{order.id}
+                        <Link href={`/admin/orders/${order.id}`} className="text-blue-600 hover:underline">
+                          #{order.id.substring(0, 8)}...
+                        </Link>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
@@ -136,47 +139,13 @@ const OrdersPage = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                          {order.status.replace('_', ' ')}
+                          {order.status.replace(/_/g, ' ')}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
-                          <button className="text-blue-600 hover:text-blue-900">
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          {order.status === 'payment_review' && (
-                            <>
-                              <button
-                                onClick={() => handleStatusUpdate(order.id, 'paid')}
-                                className="text-green-600 hover:text-green-900"
-                              >
-                                <Check className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleStatusUpdate(order.id, 'pending')}
-                                className="text-red-600 hover:text-red-900"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </>
-                          )}
-                          {order.status === 'paid' && (
-                            <button
-                              onClick={() => handleStatusUpdate(order.id, 'preparing')}
-                              className="text-purple-600 hover:text-purple-900"
-                            >
-                              <Package className="w-4 h-4" />
-                            </button>
-                          )}
-                          {order.status === 'preparing' && (
-                            <button
-                              onClick={() => handleStatusUpdate(order.id, 'shipped')}
-                              className="text-orange-600 hover:text-orange-900"
-                            >
-                              <Package className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
+                        <Link href={`/admin/orders/${order.id}`} className="text-blue-600 hover:text-blue-900 flex items-center">
+                          <Eye className="w-4 h-4 mr-1" /> View Details
+                        </Link>
                       </td>
                     </tr>
                   ))}

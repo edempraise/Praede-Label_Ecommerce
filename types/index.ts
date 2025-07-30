@@ -10,6 +10,7 @@ export interface Product {
   images: string[];
   in_stock: boolean;
   featured: boolean;
+  is_visible: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -37,7 +38,7 @@ export interface Order {
   state: string;
   items: CartItem[];
   total_amount: number;
-  status: 'pending' | 'payment_review' | 'paid' | 'preparing' | 'shipped' | 'delivered';
+  status: 'pending' | 'payment_review' | 'paid' | 'preparing' | 'ready_for_delivery' | 'shipped' | 'delivered';
   payment_receipt?: string;
   created_at: string;
   updated_at: string;
@@ -56,5 +57,6 @@ export interface User {
   email: string;
   is_admin: boolean;
   is_verified: boolean;
+  status: 'active' | 'inactive';
   created_at: string;
 }

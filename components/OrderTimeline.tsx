@@ -1,11 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Check, Truck, Star } from 'lucide-react';
+import { ShoppingCart, FileClock, CheckCircle, Package, PackageCheck, Truck, Star } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Order } from '@/types';
 
 interface OrderTimelineProps {
-  status: string;
+  status: Order['status'];
   createdAt: string;
 }
 
@@ -24,33 +25,20 @@ const OrderTimeline = ({ status, createdAt }: OrderTimelineProps) => {
     }, 100);
     return () => clearInterval(interval);
   }, []);
+
   const steps = [
-    {
-      id: 'paid',
-      title: 'Payment Confirmed',
-      description: 'Payment has been verified',
-      icon: Check,
-      color: 'bg-green-500',
-    },
-    {
-      id: 'shipped',
-      title: 'Out for Delivery',
-      description: 'Your order is on its way',
-      icon: Truck,
-      color: 'bg-orange-500',
-    },
-    {
-      id: 'delivered',
-      title: 'Delivered',
-      description: 'Order has been delivered',
-      icon: Star,
-      color: 'bg-green-600',
-    },
+    { id: 'pending', title: 'Order Placed', description: 'We have received your order.', icon: ShoppingCart, color: 'bg-gray-500' },
+    { id: 'payment_review', title: 'Payment in Review', description: 'We are reviewing your payment receipt.', icon: FileClock, color: 'bg-blue-500' },
+    { id: 'paid', title: 'Payment Confirmed', description: 'Your payment has been successfully verified.', icon: CheckCircle, color: 'bg-green-500' },
+    { id: 'preparing', title: 'Getting Order Ready', description: 'We are preparing your order for shipment.', icon: Package, color: 'bg-purple-500' },
+    { id: 'ready_for_delivery', title: 'Ready for Delivery', description: 'Your order is packaged and ready for the courier.', icon: PackageCheck, color: 'bg-indigo-500' },
+    { id: 'shipped', title: 'Out for Delivery', description: 'Your order is on its way to you.', icon: Truck, color: 'bg-orange-500' },
+    { id: 'delivered', title: 'Delivered', description: 'Your order has been delivered. Enjoy!', icon: Star, color: 'bg-teal-500' },
   ];
 
-  const getStepIndex = (status: string) => {
-    const index = steps.findIndex(step => step.id === status);
-    return index !== -1 ? index : 0;
+  const getStepIndex = (currentStatus: Order['status']) => {
+    const index = steps.findIndex(step => step.id === currentStatus);
+    return index;
   };
 
   const currentStepIndex = getStepIndex(status);
@@ -61,8 +49,8 @@ const OrderTimeline = ({ status, createdAt }: OrderTimelineProps) => {
       
       <div className="space-y-4">
         {steps.map((step, index) => {
-          const isCompleted = index <= currentStepIndex;
-          const isCurrent = index === currentStepIndex;
+          const isCompleted = currentStepIndex >= index;
+          const isCurrent = currentStepIndex === index;
           const IconComponent = step.icon;
 
           return (
@@ -71,41 +59,32 @@ const OrderTimeline = ({ status, createdAt }: OrderTimelineProps) => {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              className={`flex items-center space-x-4 ${
-                isCompleted ? 'opacity-100' : 'opacity-50'
-              }`}
+              className="flex items-start"
             >
-              <div className="flex-shrink-0">
+              <div className="flex flex-col items-center mr-4">
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    isCompleted
-                      ? step.color
-                      : 'bg-gray-200'
-                  } ${isCurrent ? 'ring-4 ring-blue-200' : ''}`}
+                    isCompleted ? step.color : 'bg-gray-300'
+                  } ${isCurrent ? 'ring-4 ring-blue-300' : ''}`}
                 >
-                  <IconComponent
-                    className={`w-5 h-5 ${
-                      isCompleted ? 'text-white' : 'text-gray-500'
-                    }`}
-                  />
+                  <IconComponent className="w-5 h-5 text-white" />
                 </div>
+                {index < steps.length - 1 && (
+                  <div className={`w-0.5 h-16 mt-1 ${isCompleted ? step.color : 'bg-gray-300'}`}></div>
+                )}
               </div>
               
-              <div className="flex-1">
-                <h4 className={`font-medium ${
-                  isCompleted ? 'text-gray-900' : 'text-gray-500'
-                }`}>
+              <div className="flex-1 pt-1">
+                <h4 className={`font-medium ${isCurrent ? 'text-blue-600' : isCompleted ? 'text-gray-800' : 'text-gray-500'}`}>
                   {step.title}
                 </h4>
-                <p className={`text-sm ${
-                  isCompleted ? 'text-gray-600' : 'text-gray-400'
-                }`}>
+                <p className={`text-sm ${isCompleted ? 'text-gray-600' : 'text-gray-400'}`}>
                   {step.description}
                 </p>
               </div>
               
               {isCurrent && (
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 pt-1">
                   <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
                 </div>
               )}
