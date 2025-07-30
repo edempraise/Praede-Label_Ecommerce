@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Order, Product, User } from '@/types';
 import { getOrders, updateOrderStatus, getProducts, getUsers } from '@/lib/supabase';
 import AddProductModal from './components/AddProductModal';
+import Link from 'next/link';
 
 const AdminDashboard = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -115,26 +116,20 @@ const AdminDashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Link href="/admin/orders">
-            <a className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center">
-              <ShoppingCart className="w-12 h-12 text-blue-500 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900">Manage Orders</h3>
-              <p className="text-gray-600 text-sm mt-1">View and process orders</p>
-            </a>
+          <Link href="/admin/orders" className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center">
+            <ShoppingCart className="w-12 h-12 text-blue-500 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900">Manage Orders</h3>
+            <p className="text-gray-600 text-sm mt-1">View and process orders</p>
           </Link>
-          <Link href="/admin/products">
-            <a className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center">
-              <Package className="w-12 h-12 text-purple-500 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900">Manage Products</h3>
-              <p className="text-gray-600 text-sm mt-1">Add, edit, and remove products</p>
-            </a>
+          <Link href="/admin/products" className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center">
+            <Package className="w-12 h-12 text-purple-500 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900">Manage Products</h3>
+            <p className="text-gray-600 text-sm mt-1">Add, edit, and remove products</p>
           </Link>
-          <Link href="/admin/customers">
-            <a className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center">
-              <Users className="w-12 h-12 text-orange-500 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900">Manage Customers</h3>
-              <p className="text-gray-600 text-sm mt-1">View and manage customer accounts</p>
-            </a>
+          <Link href="/admin/customers" className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center">
+            <Users className="w-12 h-12 text-orange-500 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900">Manage Customers</h3>
+            <p className="text-gray-600 text-sm mt-1">View and manage customer accounts</p>
           </Link>
         </div>
       </div>
