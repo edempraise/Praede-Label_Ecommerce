@@ -27,7 +27,7 @@ export const updateProduct = async (productId: string, updates: Partial<Product>
     .update(updates)
     .eq('id', productId)
     .select()
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
   return data;
@@ -245,7 +245,7 @@ export const updateOrderStatus = async (orderId: string, status: Order['status']
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', orderId)
     .select()
-    .single();
+    .maybeSingle();
   
   if (error) throw error;
   return data;
