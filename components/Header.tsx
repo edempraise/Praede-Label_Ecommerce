@@ -209,8 +209,6 @@ const Header = () => {
             </div>
           </div>
         </div>
-
-        <MobileMenu isOpen={isMenuOpen} />
       </header>
 
       <AuthModal

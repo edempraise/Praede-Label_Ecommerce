@@ -143,7 +143,6 @@ const CheckoutPage = () => {
         total_amount: getCartTotal(user.id),
         status: "paid",
         payment_receipt: reference.reference,
-        user: dbUser,
       };
 
       const order = await createOrder(orderPayload);
@@ -176,7 +175,6 @@ const CheckoutPage = () => {
         items: userCart,
         total_amount: getCartTotal(user.id),
         status: "pending",
-        user: dbUser,
       };
 
       const order = await createOrder(orderPayload);
@@ -208,7 +206,6 @@ const CheckoutPage = () => {
         items: userCart,
         total_amount: getCartTotal(user.id),
         status: "pending" as const,
-        user: dbUser,
       };
 
       const order = await createOrder(orderPayload);

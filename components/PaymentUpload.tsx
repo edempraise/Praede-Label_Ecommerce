@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { Upload, File, X, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useState } from "react";
+import { useDropzone } from "react-dropzone";
+import { Upload, File, X, Check } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface PaymentUploadProps {
   onFileUpload: (file: File) => void;
@@ -15,8 +15,8 @@ const PaymentUpload = ({ onFileUpload, isUploading }: PaymentUploadProps) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
-      'image/*': ['.png', '.jpg', '.jpeg'],
-      'application/pdf': ['.pdf']
+      "image/*": [".png", ".jpg", ".jpeg"],
+      "application/pdf": [".pdf"],
     },
     multiple: false,
     onDrop: (acceptedFiles) => {
@@ -25,7 +25,7 @@ const PaymentUpload = ({ onFileUpload, isUploading }: PaymentUploadProps) => {
         setUploadedFile(file);
         onFileUpload(file);
       }
-    }
+    },
   });
 
   const removeFile = () => {
@@ -36,62 +36,45 @@ const PaymentUpload = ({ onFileUpload, isUploading }: PaymentUploadProps) => {
   const { onDrag, onDragStart, onDragEnd, ...rootProps } = getRootProps();
   return (
     <div className="space-y-4">
-      <div className="bg-blue-50 p-4 rounded-lg">
-        <h3 className="font-semibold text-gray-900 mb-2">Bank Transfer Details</h3>
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="font-medium">Bank:</span>
-            <span>First Bank of Nigeria</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="font-medium">Account Name:</span>
-            <span>ElegantShop Limited</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="font-medium">Account Number:</span>
-            <span>1234567890</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="font-medium">Amount:</span>
-            <span className="font-bold text-blue-600">₦{/* Will be passed as prop */}</span>
-          </div>
-        </div>
-      </div>
-
       <div>
-        <h3 className="font-semibold text-gray-900 mb-2">Upload Payment Receipt</h3>
+        <h3 className="font-semibold text-gray-900 mb-2">
+          Upload Payment Receipt
+        </h3>
         <p className="text-sm text-gray-600 mb-4">
           Please upload a screenshot or photo of your payment receipt
         </p>
 
         {!uploadedFile ? (
-          <motion.div
-            {...rootProps}
-            whileHover={{ scale: 1.02 }}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-              isDragActive
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
-            }`}
-          >
-            <input {...getInputProps()} />
-            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">
-              {isDragActive
-                ? 'Drop the receipt here...'
-                : 'Drag & drop your receipt here, or click to select'}
-            </p>
-            <p className="text-sm text-gray-500 mt-2">
-              Supports: PNG, JPG, PDF (Max 10MB)
-            </p>
-          </motion.div>
+          <div {...getRootProps()}>
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+                isDragActive
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"
+              }`}
+            >
+              <input {...getInputProps()} />
+              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">
+                {isDragActive
+                  ? "Drop the receipt here..."
+                  : "Drag & drop your receipt here, or click to select"}
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                Supports: PNG, JPG, PDF (Max 10MB)
+              </p>
+            </motion.div>
+          </div>
         ) : (
           <div className="border border-gray-300 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <File className="w-8 h-8 text-blue-500" />
                 <div>
-                  <p className="font-medium text-gray-900">{uploadedFile.name}</p>
+                  <p className="font-medium text-gray-900">
+                    {uploadedFile.name}
+                  </p>
                   <p className="text-sm text-gray-500">
                     {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
                   </p>
