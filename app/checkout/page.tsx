@@ -2,25 +2,27 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { CheckCircle, CreditCard, MapPin, User } from "lucide-react";
 import { useStore } from "@/store/useStore";
 import { useAuth } from "@/hooks/useAuth";
-import { PaystackButton } from "react-paystack";
 import {
   createOrder,
   updateOrderStatus,
   uploadPaymentReceipt,
+  supabase,
 } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
-import PaymentUpload from "@/components/PaymentUpload";
 import { saveShippingInfo, getShippingInfo } from "@/lib/supabase";
+import ProgressSteps from "./components/ProgressSteps";
+import CartReviewStep from "./components/CartReviewStep";
+import ShippingInfoStep from "./components/ShippingInfoStep";
+import PaymentStep from "./components/PaymentStep";
 
 const CheckoutPage = () => {
   const router = useRouter();
   const { cart, getCartTotal, clearCart } = useStore();
   const { user } = useAuth();
   const { toast } = useToast();
+  const [dbUser, setDbUser] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
   const userCart = user ? cart[user.id] || [] : [];
   const [paymentMethod, setPaymentMethod] = useState<
@@ -43,6 +45,22 @@ const CheckoutPage = () => {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+        if (data) {
+          setDbUser(data);
+        }
+      }
+    };
+    fetchUser();
+  }, [user]);
 
   useEffect(() => {
     if (mounted && user) {
@@ -125,7 +143,8 @@ const CheckoutPage = () => {
         total_amount: getCartTotal(user.id),
         status: "paid",
         payment_receipt: reference.reference,
-      } as const;
+        user: dbUser,
+      };
 
       const order = await createOrder(orderPayload);
       clearCart(user.id);
@@ -157,7 +176,8 @@ const CheckoutPage = () => {
         items: userCart,
         total_amount: getCartTotal(user.id),
         status: "pending",
-      } as const;
+        user: dbUser,
+      };
 
       const order = await createOrder(orderPayload);
 
@@ -188,6 +208,7 @@ const CheckoutPage = () => {
         items: userCart,
         total_amount: getCartTotal(user.id),
         status: "pending" as const,
+        user: dbUser,
       };
 
       const order = await createOrder(orderPayload);
@@ -202,361 +223,49 @@ const CheckoutPage = () => {
     }
   };
 
-  const steps = [
-    { number: 1, title: "Cart Review", icon: CheckCircle },
-    { number: 2, title: "Shipping Info", icon: MapPin },
-    { number: 3, title: "Payment", icon: CreditCard },
-  ];
-
   if (!mounted) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => {
-              const IconComponent = step.icon;
-              const isActive = currentStep === step.number;
-              const isCompleted = currentStep > step.number;
-
-              return (
-                <div key={step.number} className="flex items-center">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      isActive
-                        ? "bg-blue-600 text-white"
-                        : isCompleted
-                        ? "bg-green-600 text-white"
-                        : "bg-gray-200 text-gray-600"
-                    }`}
-                  >
-                    <IconComponent className="w-5 h-5" />
-                  </div>
-                  <div className="ml-3">
-                    <p
-                      className={`text-sm font-medium ${
-                        isActive ? "text-blue-600" : "text-gray-500"
-                      }`}
-                    >
-                      Step {step.number}
-                    </p>
-                    <p
-                      className={`text-xs ${
-                        isActive ? "text-blue-600" : "text-gray-500"
-                      }`}
-                    >
-                      {step.title}
-                    </p>
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div className="flex-1 h-0.5 bg-gray-200 mx-4">
-                      <div
-                        className={`h-full ${
-                          isCompleted ? "bg-green-600" : "bg-gray-200"
-                        }`}
-                      />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <ProgressSteps currentStep={currentStep} />
 
         <div className="bg-white rounded-lg shadow-md p-6">
-          {/* Step 1: Cart Review */}
           {currentStep === 1 && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-            >
-              <h2 className="text-xl font-bold text-gray-900 mb-6">
-                Review Your Order
-              </h2>
-
-              <div className="space-y-4 mb-6">
-                {userCart.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
-                  >
-                    <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">
-                        {item.product.name}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Size: {item.size} | Color: {item.color} | Qty:{" "}
-                        {item.quantity}
-                      </p>
-                    </div>
-                    <div className="text-lg font-bold text-gray-900">
-                      ₦{(item.product.price * item.quantity).toLocaleString()}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t pt-4 mb-6">
-                <div className="flex justify-between text-xl font-bold text-gray-900">
-                  <span>Total</span>
-                  <span>₦{user && getCartTotal(user.id).toLocaleString()}</span>
-                </div>
-              </div>
-
-              <button
-                onClick={handleNextStep}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-              >
-                Continue to Shipping
-              </button>
-            </motion.div>
+            <CartReviewStep
+              userCart={userCart}
+              getCartTotal={getCartTotal}
+              handleNextStep={handleNextStep}
+              user={user}
+            />
           )}
 
-          {/* Step 2: Shipping Information */}
           {currentStep === 2 && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-            >
-              <h2 className="text-xl font-bold text-gray-900 mb-6">
-                Shipping Information
-              </h2>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    name="customer_name"
-                    value={orderData.customer_name}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address *
-                  </label>
-                  <input
-                    type="email"
-                    name="customer_email"
-                    value={orderData.customer_email}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    name="customer_phone"
-                    value={orderData.customer_phone}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    City *
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={orderData.city}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    State *
-                  </label>
-                  <select
-                    name="state"
-                    value={orderData.state}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="">Select State</option>
-                    <option value="Lagos">Lagos</option>
-                    <option value="Abuja">Abuja</option>
-                    <option value="Kano">Kano</option>
-                    <option value="Rivers">Rivers</option>
-                    <option value="Ogun">Ogun</option>
-                    <option value="Kaduna">Kaduna</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Shipping Address *
-                  </label>
-                  <textarea
-                    name="shipping_address"
-                    value={orderData.shipping_address}
-                    onChange={handleInputChange}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between mt-6">
-                <div className="flex items-center">
-                  <input
-                    id="save-info"
-                    type="checkbox"
-                    checked={saveInfo}
-                    onChange={(e) => setSaveInfo(e.target.checked)}
-                    className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <label htmlFor="save-info" className="ml-2 block text-sm text-gray-900">
-                    Save this information for next time
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex space-x-4 mt-6">
-                <button
-                  onClick={handlePrevStep}
-                  className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={handleNextStep}
-                  disabled={
-                    !orderData.customer_name ||
-                    !orderData.customer_email ||
-                    !orderData.customer_phone ||
-                    !orderData.shipping_address
-                  }
-                  className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Continue to Payment
-                </button>
-              </div>
-            </motion.div>
+            <ShippingInfoStep
+              orderData={orderData}
+              handleInputChange={handleInputChange}
+              saveInfo={saveInfo}
+              setSaveInfo={setSaveInfo}
+              handlePrevStep={handlePrevStep}
+              handleNextStep={handleNextStep}
+            />
           )}
 
-          {/* Step 3: Payment */}
           {currentStep === 3 && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-            >
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Payment</h2>
-
-              <div className="space-y-4">
-                <button
-                  onClick={() => setPaymentMethod("paystack")}
-                  className={`w-full p-4 border rounded-lg text-left ${
-                    paymentMethod === "paystack"
-                      ? "border-blue-600 ring-2 ring-blue-600"
-                      : "border-gray-300"
-                  }`}
-                >
-                  <h3 className="font-semibold">Pay with Paystack</h3>
-                  <p className="text-sm text-gray-600">
-                    Pay securely with your card.
-                  </p>
-                </button>
-                <button
-                  onClick={() => setPaymentMethod("bank_transfer")}
-                  className={`w-full p-4 border rounded-lg text-left ${
-                    paymentMethod === "bank_transfer"
-                      ? "border-blue-600 ring-2 ring-blue-600"
-                      : "border-gray-300"
-                  }`}
-                >
-                  <h3 className="font-semibold">Bank Transfer</h3>
-                  <p className="text-sm text-gray-600">
-                    Pay by bank transfer and upload your receipt.
-                  </p>
-                </button>
-              </div>
-
-              {paymentMethod === "paystack" && (
-                <div className="mt-6 text-center">
-                  <PaystackButton
-                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-                    publicKey={paystackPublicKey}
-                    amount={user ? getCartTotal(user.id) * 100 : 0}
-                    email={orderData.customer_email}
-                    text="Pay Now"
-                    onSuccess={handlePaystackSuccess}
-                    onClose={handlePaystackClose}
-                  />
-                </div>
-              )}
-
-              {paymentMethod === "bank_transfer" && (
-                <div className="mt-6">
-                  <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                    <p className="text-sm text-gray-600">
-                      Please transfer the total amount of
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900">
-                      ₦{user && getCartTotal(user.id).toLocaleString()}
-                    </p>
-                    <p className="text-sm text-gray-600 mt-2">
-                      to the following bank account:
-                    </p>
-                    <div className="mt-2">
-                      <p className="text-sm font-semibold">
-                        Bank Name: Access Bank
-                      </p>
-                      <p className="text-sm font-semibold">
-                        Account Number: 1234567890
-                      </p>
-                      <p className="text-sm font-semibold">
-                        Account Name: ElegantShop
-                      </p>
-                    </div>
-                  </div>
-                  <PaymentUpload
-                    onFileUpload={handleFileUpload}
-                    isUploading={isUploading}
-                  />
-                  <button
-                    onClick={handleBankTransferContinue}
-                    className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-                  >
-                    Continue
-                  </button>
-                </div>
-              )}
-
-              <div className="mt-6 flex space-x-4">
-                <button
-                  onClick={handlePrevStep}
-                  className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
-                >
-                  Back
-                </button>
-              </div>
-            </motion.div>
+            <PaymentStep
+              paymentMethod={paymentMethod}
+              setPaymentMethod={setPaymentMethod}
+              handlePrevStep={handlePrevStep}
+              user={user}
+              getCartTotal={getCartTotal}
+              orderData={orderData}
+              paystackPublicKey={paystackPublicKey}
+              handlePaystackSuccess={handlePaystackSuccess}
+              handlePaystackClose={handlePaystackClose}
+              handleFileUpload={handleFileUpload}
+              isUploading={isUploading}
+              handleBankTransferContinue={handleBankTransferContinue}
+            />
           )}
         </div>
       </div>
