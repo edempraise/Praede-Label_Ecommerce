@@ -2,8 +2,9 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Header from '@/components/Header';
-import WhatsAppButton from '@/components/WhatsAppButton';
+import ConditionalWhatsAppButton from '@/components/ConditionalWhatsAppButton';
 import { Toaster } from '@/components/ui/toaster';
+import SettingsProvider from '@/components/SettingsProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,12 +29,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Header />
-        <main className="min-h-screen">
-          {children}
-        </main>
-        <WhatsAppButton />
-        <Toaster />
+        <SettingsProvider>
+          <Header />
+          <main className="min-h-screen">
+            {children}
+          </main>
+          <ConditionalWhatsAppButton />
+          <Toaster />
+        </SettingsProvider>
       </body>
     </html>
   );

@@ -3,40 +3,51 @@
 import { useState, useEffect } from 'react';
 import { Package, ShoppingCart, Users, TrendingUp, Eye, Edit, Trash2, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Order, Product } from '@/types';
-import { getOrders, updateOrderStatus } from '@/lib/supabase';
+import { Order, Product, User } from '@/types';
+import { getOrders, updateOrderStatus, getProducts, getUsers } from '@/lib/supabase';
 import AddProductModal from './components/AddProductModal';
+import Link from 'next/link';
 
 const AdminDashboard = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('orders');
   const [showAddProductModal, setShowAddProductModal] = useState(false);
 
   useEffect(() => {
-    const loadOrders = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const allOrders = await getOrders();
+        const [allOrders, allProducts, allUsers] = await Promise.all([
+          getOrders(),
+          getProducts(),
+          getUsers(),
+        ]);
         setOrders(allOrders);
+        setProducts(allProducts);
+        setUsers(allUsers);
       } catch (err) {
-        console.error('Error loading orders:', err);
-        setError('Failed to load orders');
+        console.error('Error loading data:', err);
+        setError('Failed to load data');
         setOrders([]);
+        setProducts([]);
+        setUsers([]);
       } finally {
         setLoading(false);
       }
     };
 
-    loadOrders();
+    loadData();
   }, []);
 
   const handleStatusUpdate = async (orderId: string, newStatus: string) => {
     try {
       await updateOrderStatus(orderId, newStatus as Order['status']);
-      setOrders(orders.map(order => 
+      setOrders(orders.map(order =>
         order.id === orderId ? { ...order, status: newStatus as Order['status'] } : order
       ));
     } catch (error) {
@@ -63,10 +74,10 @@ const AdminDashboard = () => {
   };
 
   const stats = [
-    { title: 'Total Orders', value: '1,234', icon: ShoppingCart, color: 'bg-blue-500' },
-    { title: 'Total Revenue', value: '₦5,678,900', icon: TrendingUp, color: 'bg-green-500' },
-    { title: 'Total Products', value: '456', icon: Package, color: 'bg-purple-500' },
-    { title: 'Total Customers', value: '789', icon: Users, color: 'bg-orange-500' },
+    { title: 'Total Orders', value: orders.length, icon: ShoppingCart, color: 'bg-blue-500' },
+    { title: 'Total Revenue', value: `₦${orders.reduce((acc, order) => acc + order.total_amount, 0).toLocaleString()}`, icon: TrendingUp, color: 'bg-green-500' },
+    { title: 'Total Products', value: products.length, icon: Package, color: 'bg-purple-500' },
+    { title: 'Total Customers', value: users.length, icon: Users, color: 'bg-orange-500' },
   ];
 
   return (
@@ -103,173 +114,24 @@ const AdminDashboard = () => {
           })}
         </div>
 
-        {/* Tabs */}
-        <div className="mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              {['orders', 'products', 'customers'].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              ))}
-            </nav>
-          </div>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Link href="/admin/orders" className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center">
+            <ShoppingCart className="w-12 h-12 text-blue-500 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900">Manage Orders</h3>
+            <p className="text-gray-600 text-sm mt-1">View and process orders</p>
+          </Link>
+          <Link href="/admin/products" className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center">
+            <Package className="w-12 h-12 text-purple-500 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900">Manage Products</h3>
+            <p className="text-gray-600 text-sm mt-1">Add, edit, and remove products</p>
+          </Link>
+          <Link href="/admin/customers" className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow flex flex-col items-center justify-center">
+            <Users className="w-12 h-12 text-orange-500 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900">Manage Customers</h3>
+            <p className="text-gray-600 text-sm mt-1">View and manage customer accounts</p>
+          </Link>
         </div>
-
-        {/* Orders Tab */}
-        {activeTab === 'orders' && (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Recent Orders</h2>
-            </div>
-            
-            {loading ? (
-              <div className="p-6">
-                <div className="animate-pulse space-y-4">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="h-16 bg-gray-200 rounded"></div>
-                  ))}
-                </div>
-              </div>
-            ) : error ? (
-              <div className="p-6 text-center">
-                <p className="text-red-500 text-lg mb-4">{error}</p>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Try Again
-                </button>
-              </div>
-            ) : orders.length === 0 ? (
-              <div className="p-6 text-center">
-                <p className="text-gray-500 text-lg">No orders found.</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Order ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Customer
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Amount
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {orders.map((order) => (
-                      <tr key={order.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          #{order.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {order.customer_name}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {order.customer_email}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          ₦{order.total_amount.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                            {order.status.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex space-x-2">
-                            <button className="text-blue-600 hover:text-blue-900">
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            {order.status === 'payment_review' && (
-                              <>
-                                <button
-                                  onClick={() => handleStatusUpdate(order.id, 'paid')}
-                                  className="text-green-600 hover:text-green-900"
-                                >
-                                  <Check className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleStatusUpdate(order.id, 'pending')}
-                                  className="text-red-600 hover:text-red-900"
-                                >
-                                  <X className="w-4 h-4" />
-                                </button>
-                              </>
-                            )}
-                            {order.status === 'paid' && (
-                              <button
-                                onClick={() => handleStatusUpdate(order.id, 'preparing')}
-                                className="text-purple-600 hover:text-purple-900"
-                              >
-                                <Package className="w-4 h-4" />
-                              </button>
-                            )}
-                            {order.status === 'preparing' && (
-                              <button
-                                onClick={() => handleStatusUpdate(order.id, 'shipped')}
-                                className="text-orange-600 hover:text-orange-900"
-                              >
-                                <Package className="w-4 h-4" />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Products Tab */}
-        {activeTab === 'products' && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Products</h2>
-              <button 
-                onClick={() => setShowAddProductModal(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Add Product
-              </button>
-            </div>
-            <p className="text-gray-600">Product management will be implemented here.</p>
-          </div>
-        )}
-
-        {/* Customers Tab */}
-        {activeTab === 'customers' && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Customers</h2>
-            <p className="text-gray-600">Customer management will be implemented here.</p>
-          </div>
-        )}
       </div>
 
       {/* Add Product Modal */}
