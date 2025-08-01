@@ -227,22 +227,43 @@ export const getOrders = async (): Promise<Order[]> => {
 
 export const getOrderById = async (id: string): Promise<Order | null> => {
   const { data, error } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('id', id)
+    .from("orders")
+    .select("*")
+    .eq("id", id)
     .single();
-  
+
   if (error) {
-    if (error.code === 'PGRST116') return null; // Not found
+    if (error.code === "PGRST116") return null; // Not found
     throw error;
   }
+
+  // If there's a receipt, create a signed URL
+  if (data?.payment_receipt) {
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+      .from("receipts") // ✅ make sure this matches your bucket name
+      .createSignedUrl(data.payment_receipt, 60 * 60); // valid for 1 hour
+
+    if (!signedUrlError && signedUrlData?.signedUrl) {
+      data.payment_receipt = signedUrlData.signedUrl;
+    }
+  }
+
   return data;
 };
 
-export const updateOrderStatus = async (orderId: string, status: Order['status']): Promise<Order> => {
+export const updateOrderStatus = async (orderId: string, status: Order['status'], receiptUrl?: string): Promise<Order> => {
+  const updates: any = { 
+    status, 
+    updated_at: new Date().toISOString() 
+  };
+  
+  if (receiptUrl) {
+    updates.payment_receipt = receiptUrl;
+  }
+  
   const { data, error } = await supabase
     .from('orders')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update(updates)
     .eq('id', orderId)
     .select()
     .maybeSingle();

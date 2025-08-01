@@ -139,6 +139,7 @@ const CheckoutPage = () => {
 
       const orderPayload = {
         ...orderData,
+        customer_id: user.id,
         items: userCart,
         total_amount: getCartTotal(user.id),
         status: "paid",
@@ -172,6 +173,7 @@ const CheckoutPage = () => {
 
       const orderPayload = {
         ...orderData,
+        customer_id: user.id,
         items: userCart,
         total_amount: getCartTotal(user.id),
         status: "pending",
@@ -179,9 +181,11 @@ const CheckoutPage = () => {
 
       const order = await createOrder(orderPayload);
 
-      const receiptUrl = await uploadPaymentReceipt(file, order.id);
+      // Upload the receipt
+    const receiptUrl = await uploadPaymentReceipt(file, order.id);
 
-      await updateOrderStatus(order.id, "payment_review");
+    // Save receipt URL + update status
+    await updateOrderStatus(order.id, "payment_review", receiptUrl);
 
       clearCart(user.id);
       toast({
@@ -202,7 +206,7 @@ const CheckoutPage = () => {
 
       const orderPayload = {
         ...orderData,
-        customer_id: user.id, // ✅ Required for RLS check
+        customer_id: user.id,
         items: userCart,
         total_amount: getCartTotal(user.id),
         status: "pending" as const,
