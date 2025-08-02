@@ -243,6 +243,19 @@ const AdminOrderDetailPage = () => {
               <p>
                 {order.city}, {order.state}
               </p>
+              {order.payment_receipt && (
+                <>
+                  <h4 className="font-bold mt-4">Payment Receipt</h4>
+                  <a
+                    href={order.payment_receipt}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    View Receipt
+                  </a>
+                </>
+              )}
             </div>
           </div>
         </div>

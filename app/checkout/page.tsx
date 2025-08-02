@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   createOrder,
   supabase,
+  uploadReceipt,
 } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { saveShippingInfo, getShippingInfo } from "@/lib/supabase";
@@ -14,6 +15,7 @@ import ProgressSteps from "./components/ProgressSteps";
 import CartReviewStep from "./components/CartReviewStep";
 import ShippingInfoStep from "./components/ShippingInfoStep";
 import PaymentStep from "./components/PaymentStep";
+import ReceiptUploadStep from "./components/ReceiptUploadStep";
 
 const CheckoutPage = () => {
   const router = useRouter();
@@ -36,6 +38,7 @@ const CheckoutPage = () => {
   });
   const [saveInfo, setSaveInfo] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const paystackPublicKey = "pk_test_e16157c8199026191661fd46cc917905bb63c367";
 
@@ -116,7 +119,7 @@ const CheckoutPage = () => {
         });
       }
     }
-    if (currentStep < 3) {
+    if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -143,7 +146,7 @@ const CheckoutPage = () => {
         payment_reference: reference.reference, // replaced payment_receipt
       };
 
-      const order = await createOrder(orderPayload);
+      await createOrder(orderPayload);
       clearCart(user.id);
       toast({
         title: "Order Placed!",
@@ -159,27 +162,46 @@ const CheckoutPage = () => {
     console.log("Paystack payment closed");
   };
 
-  const handleBankTransferContinue = async () => {
+  const handleBankTransferContinue = () => {
+    if (paymentMethod === 'bank_transfer') {
+      setCurrentStep(4);
+    }
+  };
+
+  const handleReceiptUploadAndCreateOrder = async (receiptFile: File) => {
+    if (!user) {
+      toast({ title: "Error", description: "You must be logged in to place an order.", variant: "destructive" });
+      return;
+    }
+    setIsUploading(true);
     try {
-      if (!user) throw new Error("User not authenticated");
+      const receiptUrl = await uploadReceipt(receiptFile);
 
       const orderPayload = {
         ...orderData,
         customer_id: user.id,
         items: userCart,
         total_amount: getCartTotal(user.id),
-        status: "pending" as const,
+        status: "payment_review" as const,
+        payment_receipt: receiptUrl,
       };
 
-      const order = await createOrder(orderPayload);
+      await createOrder(orderPayload);
       clearCart(user.id);
       toast({
         title: "Order Placed!",
-        description: "Your order has been successfully placed.",
+        description: "Your order has been successfully placed and is under review.",
       });
       router.push("/orders");
     } catch (error) {
       console.error("Error creating order:", error);
+      toast({
+        title: "Error",
+        description: "Failed to place order. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -223,6 +245,14 @@ const CheckoutPage = () => {
               handlePaystackSuccess={handlePaystackSuccess}
               handlePaystackClose={handlePaystackClose}
               handleBankTransferContinue={handleBankTransferContinue}
+            />
+          )}
+
+          {currentStep === 4 && (
+            <ReceiptUploadStep
+              handlePrevStep={handlePrevStep}
+              handleReceiptUpload={handleReceiptUploadAndCreateOrder}
+              isUploading={isUploading}
             />
           )}
         </div>

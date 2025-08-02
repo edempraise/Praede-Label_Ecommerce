@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle, CreditCard, MapPin } from "lucide-react";
+import { CheckCircle, CreditCard, MapPin, UploadCloud } from "lucide-react";
 import { FC } from "react";
 
 interface Step {
@@ -17,6 +17,7 @@ const steps: Step[] = [
   { number: 1, title: "Cart Review", icon: CheckCircle },
   { number: 2, title: "Shipping Info", icon: MapPin },
   { number: 3, title: "Payment", icon: CreditCard },
+  { number: 4, title: "Receipt Upload", icon: UploadCloud },
 ];
 
 const ProgressSteps: FC<ProgressStepsProps> = ({ currentStep }) => {

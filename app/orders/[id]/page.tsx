@@ -185,6 +185,19 @@ const OrderDetailPage = () => {
                     {order.status.replace("_", " ")}
                   </span>
                 </div>
+                {order.payment_receipt && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Payment Receipt</span>
+                    <a
+                      href={order.payment_receipt}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-blue-600 hover:underline"
+                    >
+                      View Receipt
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>

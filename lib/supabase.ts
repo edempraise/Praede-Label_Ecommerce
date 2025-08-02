@@ -82,6 +82,19 @@ export const uploadLogo = async (file: File): Promise<string> => {
   return data.publicUrl;
 };
 
+export const uploadReceipt = async (file: File): Promise<string> => {
+	const fileName = `receipt-${Date.now()}.${file.name.split(".").pop()}`;
+
+	const { error } = await supabase.storage
+		.from("receipts")
+		.upload(fileName, file, { contentType: file.type });
+
+	if (error) throw error;
+
+	const { data } = supabase.storage.from("receipts").getPublicUrl(fileName);
+	return data.publicUrl;
+};
+
 // ---------------- Settings ----------------
 export const getSettings = async (): Promise<any> => {
   const { data, error } = await supabase.from("settings").select("*");

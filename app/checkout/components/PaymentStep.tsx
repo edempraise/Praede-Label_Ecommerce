@@ -97,6 +97,12 @@ const PaymentStep: FC<PaymentStepProps> = ({
               <p className="text-sm font-semibold">Account Name: ElegantShop</p>
             </div>
           </div>
+          <button
+            onClick={handleBankTransferContinue}
+            className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Continue
+          </button>
         </div>
       )}
 
