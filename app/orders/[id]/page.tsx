@@ -7,6 +7,8 @@ import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Package, MapPin, Clock, Phone, Mail } from "lucide-react";
 import OrderTimeline from "@/components/OrderTimeline";
+import PaymentUpload from "@/components/PaymentUpload";
+import { uploadPaymentReceipt, updateOrderStatus } from "@/lib/supabase";
 import { Order } from "@/types";
 import { getOrderById } from "@/lib/supabase";
 
