@@ -219,17 +219,39 @@ export const getCategories = async (): Promise<Category[]> => {
   return data || [];
 };
 
+import {
+  getNewOrderEmailForCustomer,
+  getNewOrderEmailForAdmin,
+} from "./email-templates";
+
 export const createOrder = async (
   orderData: Omit<Order, "id" | "created_at" | "updated_at">
 ): Promise<Order> => {
-  const { data, error } = await supabase
+  const { data: order, error } = await supabase
     .from("orders")
     .insert(orderData)
     .select()
     .single();
 
   if (error) throw error;
-  return data;
+
+  // Send emails after successful order creation
+  try {
+    const customerEmail = getNewOrderEmailForCustomer(order);
+    await supabase.functions.invoke("send-email", {
+      body: customerEmail,
+    });
+
+    const adminEmail = getNewOrderEmailForAdmin(order);
+    await supabase.functions.invoke("send-email", {
+      body: adminEmail,
+    });
+  } catch (emailError) {
+    console.error("Failed to send new order emails:", emailError);
+    // Don't block the order creation if email fails
+  }
+
+  return order;
 };
 
 export const getOrderById = async (id: string): Promise<Order | null> => {
