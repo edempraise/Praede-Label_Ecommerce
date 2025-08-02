@@ -318,7 +318,7 @@ export const getProductsByCategory = async (
 export async function getOrders(): Promise<Order[]> {
   const { data, error } = await supabase
     .from('orders')
-    .select(`*, items(*, product(*))`)
+    .select(`*`)
     .order('created_at', { ascending: false });
 
   if (error) {
