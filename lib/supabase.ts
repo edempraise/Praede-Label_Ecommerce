@@ -223,16 +223,6 @@ export const createOrder = async (
   return data;
 };
 
-export const getOrders = async (): Promise<Order[]> => {
-  const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .order("created_at", { ascending: false });
-
-  if (error) throw error;
-  return data || [];
-};
-
 export const getOrderById = async (id: string): Promise<Order | null> => {
   const { data, error } = await supabase
     .from("orders")
@@ -241,26 +231,35 @@ export const getOrderById = async (id: string): Promise<Order | null> => {
     .single();
 
   if (error) {
-    if (error.code === "PGRST116") return null; // Not found
+    if (error.code === "PGRST116") return null;
     throw error;
   }
 
-  // ✅ Normalize the receipt path
   if (data?.payment_receipt) {
     let filePath = data.payment_receipt;
 
-    const { data: signedUrlData, error: signedUrlError } =
-      await supabase.storage
-        .from("receipts")
-        .createSignedUrl(filePath, 60 * 60);
+    // If it's a full URL, reduce it to relative path
+    if (filePath.startsWith("http")) {
+      const idx = filePath.indexOf("payment-receipts/");
+      if (idx !== -1) {
+        filePath = filePath.slice(idx);
+      }
+    }
 
-    if (!signedUrlError && signedUrlData?.signedUrl) {
+    // ⚡ Don't strip "receipts/"
+    const { data: signedUrlData, error: urlError } = await supabase.storage
+      .from("receipts")
+      .createSignedUrl(filePath, 60 * 60);
+
+    if (!urlError && signedUrlData?.signedUrl) {
       data.payment_receipt = signedUrlData.signedUrl;
     }
   }
 
   return data;
 };
+
+
 
 export const updateOrderStatus = async (
   orderId: string,
@@ -291,17 +290,16 @@ export const uploadPaymentReceipt = async (
   file: File,
   orderId: string
 ): Promise<string> => {
-  const fileName = `payment-receipts/${orderId}-${Date.now()}.${file.name
-    .split(".")
-    .pop()}`;
+  const fileName = `${orderId}-${Date.now()}.${file.name.split(".").pop()}`;
+  const filePath = `payment-receipts/${fileName}`;
 
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from("receipts")
-    .upload(fileName, file);
+    .upload(filePath, file);
 
   if (error) throw error;
 
-  return fileName;
+  return filePath; // ✅ only store the relative path
 };
 
 // Search products
