@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Star, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getProductById, getReviewsByProductId, createReview, hasUserPurchasedProduct } from '@/lib/supabase';
+import { getProductById, getReviewsByProductId, createReview } from '@/lib/supabase';
 import { Product, Review } from '@/types';
 import { useStore } from '@/store/useStore';
 import { useToast } from '@/hooks/use-toast';
@@ -24,7 +24,6 @@ const ProductDetailPage = () => {
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [newRating, setNewRating] = useState(0);
   const [newComment, setNewComment] = useState('');
-  const [canReview, setCanReview] = useState(false);
   const { addToCart, currentUserId } = useStore();
   const { toast } = useToast();
 
@@ -44,10 +43,6 @@ const ProductDetailPage = () => {
           const reviewData = await getReviewsByProductId(id as string);
           setReviews(reviewData);
 
-          if (user) {
-            const purchased = await hasUserPurchasedProduct(user.id, id as string);
-            setCanReview(purchased);
-          }
         }
       } catch (err) {
         console.error('Error loading product:', err);
@@ -285,7 +280,7 @@ const ProductDetailPage = () => {
           )}
 
           {/* Review Submission Form */}
-          {canReview && (
+          {user && (
             <div className="mt-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Write a Review</h3>
               <form onSubmit={handleReviewSubmit}>

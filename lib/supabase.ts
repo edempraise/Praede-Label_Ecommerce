@@ -352,20 +352,3 @@ export const createReview = async (review: {
   if (error) throw error;
   return data;
 };
-
-export const hasUserPurchasedProduct = async (userId: string, productId: string): Promise<boolean> => {
-  const { data, error } = await supabase
-    .from('orders')
-    .select('id, items')
-    .eq('customer_id', userId)
-    .eq('status', 'delivered');
-
-  if (error) {
-    console.error('Error fetching user orders:', error);
-    return false;
-  }
-
-  return data.some(order =>
-    order.items.some((item: any) => item.product_id === productId)
-  );
-};
