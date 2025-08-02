@@ -70,9 +70,11 @@ const CartPage = () => {
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-gray-900 truncate">
-                          {item.product.name}
-                        </h3>
+                        <Link href={`/products/${item.product.id}`}>
+                          <h3 className="text-lg font-semibold text-gray-900 truncate hover:text-blue-600">
+                            {item.product.name}
+                          </h3>
+                        </Link>
                         <p className="text-gray-600 text-sm mt-1">
                           Size: {item.size} | Color: {item.color}
                         </p>
