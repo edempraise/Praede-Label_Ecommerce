@@ -267,7 +267,7 @@ const ProductDetailPage = () => {
                         />
                       ))}
                     </div>
-                    <span className="text-sm text-gray-600 ml-2">by {review.user.full_name || review.user.email}</span>
+                    <span className="text-sm text-gray-600 ml-2">by {review.user.email}</span>
                   </div>
                   <p className="text-gray-700">{review.comment}</p>
                 </div>

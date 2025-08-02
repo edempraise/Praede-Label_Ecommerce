@@ -57,7 +57,6 @@ export interface Category {
 export interface User {
   id: string;
   email: string;
-  full_name: string;
   is_admin: boolean;
   is_verified: boolean;
   status: 'active' | 'inactive';
