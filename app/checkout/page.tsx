@@ -6,8 +6,6 @@ import { useStore } from "@/store/useStore";
 import { useAuth } from "@/hooks/useAuth";
 import {
   createOrder,
-  updateOrderStatus,
-  uploadPaymentReceipt,
   supabase,
 } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
@@ -28,7 +26,6 @@ const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState<
     "paystack" | "bank_transfer" | null
   >(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [orderData, setOrderData] = useState({
     customer_name: "",
     customer_email: "",
@@ -49,7 +46,7 @@ const CheckoutPage = () => {
   useEffect(() => {
     const fetchUser = async () => {
       if (user) {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from("users")
           .select("*")
           .eq("id", user.id)
@@ -142,8 +139,8 @@ const CheckoutPage = () => {
         customer_id: user.id,
         items: userCart,
         total_amount: getCartTotal(user.id),
-        status: "paid",
-        payment_receipt: reference.reference,
+        status: "paid" as const,
+        payment_reference: reference.reference, // replaced payment_receipt
       };
 
       const order = await createOrder(orderPayload);
@@ -160,44 +157,6 @@ const CheckoutPage = () => {
 
   const handlePaystackClose = () => {
     console.log("Paystack payment closed");
-  };
-
-  const handleFileUpload = async (file: File) => {
-    try {
-      setIsUploading(true);
-
-      if (!user) {
-        console.error("User is not authenticated");
-        return;
-      }
-
-      const orderPayload = {
-        ...orderData,
-        customer_id: user.id,
-        items: userCart,
-        total_amount: getCartTotal(user.id),
-        status: "pending",
-      };
-
-      const order = await createOrder(orderPayload);
-
-      // Upload the receipt
-    const receiptUrl = await uploadPaymentReceipt(file, order.id);
-
-    // Save receipt URL + update status
-    await updateOrderStatus(order.id, "payment_review", receiptUrl);
-
-      clearCart(user.id);
-      toast({
-        title: "Order Placed!",
-        description: "Your order has been successfully placed.",
-      });
-      router.push("/orders");
-    } catch (error) {
-      console.error("Error creating order:", error);
-    } finally {
-      setIsUploading(false);
-    }
   };
 
   const handleBankTransferContinue = async () => {
@@ -263,8 +222,6 @@ const CheckoutPage = () => {
               paystackPublicKey={paystackPublicKey}
               handlePaystackSuccess={handlePaystackSuccess}
               handlePaystackClose={handlePaystackClose}
-              handleFileUpload={handleFileUpload}
-              isUploading={isUploading}
               handleBankTransferContinue={handleBankTransferContinue}
             />
           )}

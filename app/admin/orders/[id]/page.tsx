@@ -1,23 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { Order } from "@/types";
+import { useParams } from "next/navigation";
 import { getOrderById, updateOrderStatus } from "@/lib/supabase";
+import { Order } from "@/types";
 import Link from "next/link";
 import {
   ArrowLeft,
   CheckCircle,
   Clock,
-  Package,
-  Truck,
-  Star,
   XCircle,
-  AlertTriangle,
 } from "lucide-react";
 
-// This will be the new AdminOrderTimeline component, defined in this file for now.
+// Timeline component
 const AdminOrderTimeline = ({
   order,
   onStatusUpdate,
@@ -40,10 +35,7 @@ const AdminOrderTimeline = ({
   const handleUpdate = (newStatus: Order["status"]) => {
     if (
       window.confirm(
-        `Are you sure you want to update the status to "${newStatus.replace(
-          "_",
-          " "
-        )}"?`
+        `Are you sure you want to update the status to "${newStatus.replace("_", " ")}"?`
       )
     ) {
       onStatusUpdate(newStatus);
@@ -57,7 +49,6 @@ const AdminOrderTimeline = ({
         {steps.map((step, index) => {
           const isCompleted = index < currentStepIndex;
           const isCurrent = index === currentStepIndex;
-          const isFuture = index > currentStepIndex;
 
           return (
             <div key={step.id} className="flex items-start">
@@ -82,7 +73,7 @@ const AdminOrderTimeline = ({
                     className={`w-0.5 h-12 mt-1 ${
                       isCompleted ? "bg-green-500" : "bg-gray-300"
                     }`}
-                  ></div>
+                  />
                 )}
               </div>
               <div className="pt-1">
@@ -97,18 +88,16 @@ const AdminOrderTimeline = ({
                 >
                   {step.title}
                 </p>
-                {isCurrent && (
+                {isCurrent && index < steps.length - 1 && (
                   <div className="mt-2 space-x-2">
-                    {index < steps.length - 1 && (
-                      <button
-                        onClick={() =>
-                          handleUpdate(steps[index + 1].id as Order["status"])
-                        }
-                        className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700"
-                      >
-                        Advance to: {steps[index + 1].title}
-                      </button>
-                    )}
+                    <button
+                      onClick={() =>
+                        handleUpdate(steps[index + 1].id as Order["status"])
+                      }
+                      className="bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700"
+                    >
+                      Advance to: {steps[index + 1].title}
+                    </button>
                   </div>
                 )}
               </div>
@@ -122,7 +111,6 @@ const AdminOrderTimeline = ({
 
 const AdminOrderDetailPage = () => {
   const { id } = useParams();
-  const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -158,15 +146,11 @@ const AdminOrderDetailPage = () => {
         return;
       }
       setOrder(updatedOrder);
-      // Add a toast notification here for better UX
     } catch (err) {
       console.error("Failed to update order status:", err);
       alert("Failed to update order status.");
     }
   };
-
-  const confirmPayment = () => handleStatusUpdate("paid");
-  const rejectPayment = () => handleStatusUpdate("pending");
 
   if (loading) {
     return (
@@ -209,56 +193,6 @@ const AdminOrderDetailPage = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            {order.status === "payment_review" && (
-              <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-yellow-400">
-                <h3 className="text-xl font-bold mb-4 flex items-center">
-                  <AlertTriangle className="w-6 h-6 mr-2 text-yellow-500" />
-                  Confirm Payment
-                </h3>
-                {order.payment_receipt ? (
-                  <div>
-                    <p className="mb-4">
-                      A payment receipt has been uploaded. Please review it and
-                      confirm the payment.
-                    </p>
-                    <a
-                      href={order.payment_receipt}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline font-semibold mb-6 block"
-                    >
-                      View Payment Receipt
-                    </a>
-                    <img
-                      src={order.payment_receipt}
-                      alt="Payment Receipt"
-                      className="max-w-full h-auto rounded-md border"
-                    />
-                    <div className="mt-6 flex space-x-4">
-                      <button
-                        onClick={confirmPayment}
-                        className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center"
-                      >
-                        <CheckCircle className="w-5 h-5 mr-2" />
-                        Approve Payment
-                      </button>
-                      <button
-                        onClick={rejectPayment}
-                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center"
-                      >
-                        <XCircle className="w-5 h-5 mr-2" />
-                        Reject Payment
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-600">
-                    No payment receipt was uploaded for this order.
-                  </p>
-                )}
-              </div>
-            )}
-
             <AdminOrderTimeline
               order={order}
               onStatusUpdate={handleStatusUpdate}

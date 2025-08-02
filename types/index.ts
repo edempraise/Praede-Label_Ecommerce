@@ -42,7 +42,7 @@ export interface Order {
   payment_receipt?: string;
   created_at: string;
   updated_at: string;
-  user: User;
+  user?: User;
 }
 
 export interface Category {

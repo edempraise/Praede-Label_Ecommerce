@@ -1,14 +1,10 @@
 "use client";
-// export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from "react";
-import Image from 'next/image';
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Package, MapPin, Clock, Phone, Mail } from "lucide-react";
+import { MapPin, Phone, Mail } from "lucide-react";
 import OrderTimeline from "@/components/OrderTimeline";
-import PaymentUpload from "@/components/PaymentUpload";
-import { uploadPaymentReceipt, updateOrderStatus } from "@/lib/supabase";
 import { Order } from "@/types";
 import { getOrderById } from "@/lib/supabase";
 
@@ -189,35 +185,6 @@ const OrderDetailPage = () => {
                     {order.status.replace("_", " ")}
                   </span>
                 </div>
-                {order.payment_receipt && (
-                  <div className="mt-6 pt-4 border-t">
-                    <h3 className="text-md font-semibold text-gray-800 mb-2">
-                      Payment Receipt
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-4">
-                      Your payment receipt has been uploaded. You can view it
-                      below.
-                    </p>
-                    <a
-                      href={order.payment_receipt}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline font-medium"
-                    >
-                      View Full Receipt
-                    </a>
-                    <div className="mt-4">
-                      <Image
-                        src={order.payment_receipt}
-                        alt="Payment receipt"
-                        width={0}
-                        height={0}
-                        sizes="100vw"
-                        className="w-full h-auto rounded-lg border shadow-sm"
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>

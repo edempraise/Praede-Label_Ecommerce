@@ -11,7 +11,7 @@ if (!supabaseUrl || !supabaseKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Helper functions for database operations
+// ---------------- Products ----------------
 export const getProducts = async (): Promise<Product[]> => {
   const { data, error } = await supabase
     .from("products")
@@ -61,16 +61,15 @@ export const deleteProduct = async (productId: string): Promise<void> => {
   if (error) throw error;
 };
 
+// ---------------- Logos ----------------
 export const uploadLogo = async (file: File): Promise<string> => {
   const fileName = `logo-${Date.now()}.${file.name.split(".").pop()}`;
 
-  // Try update first
   let { error } = await supabase.storage
     .from("logos")
     .update(fileName, file, { contentType: file.type });
 
   if (error && error.message.includes("not found")) {
-    // If file doesn't exist, fallback to upload
     const res = await supabase.storage
       .from("logos")
       .upload(fileName, file, { contentType: file.type });
@@ -80,10 +79,10 @@ export const uploadLogo = async (file: File): Promise<string> => {
   if (error) throw error;
 
   const { data } = supabase.storage.from("logos").getPublicUrl(fileName);
-
   return data.publicUrl;
 };
 
+// ---------------- Settings ----------------
 export const getSettings = async (): Promise<any> => {
   const { data, error } = await supabase.from("settings").select("*");
 
@@ -109,7 +108,7 @@ export const updateSetting = async (key: string, value: any): Promise<any> => {
   return data;
 };
 
-// Shipping Information
+// ---------------- Shipping Info ----------------
 export const getShippingInfo = async (userId: string) => {
   const { data, error } = await supabase
     .from("shipping_info")
@@ -117,10 +116,7 @@ export const getShippingInfo = async (userId: string) => {
     .eq("user_id", userId)
     .single();
 
-  if (error && error.code !== "PGRST116") {
-    // Ignore 'not found' error
-    throw error;
-  }
+  if (error && error.code !== "PGRST116") throw error;
   return data;
 };
 
@@ -129,14 +125,13 @@ export const saveShippingInfo = async (userId: string, shippingData: any) => {
     .from("shipping_info")
     .upsert({ user_id: userId, ...shippingData }, { onConflict: "user_id" });
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
   return data;
 };
 
+// ---------------- Users ----------------
 export const getAdminCount = async (): Promise<number> => {
-  const { data, error, count } = await supabase
+  const { error, count } = await supabase
     .from("users")
     .select("*", { count: "exact", head: true })
     .eq("user_metadata->>is_admin", "true");
@@ -152,7 +147,7 @@ export const getUsers = async (): Promise<any[]> => {
   const { data, error } = await supabase
     .from("users")
     .select("*")
-    .eq("is_admin", false) // hides admins in CustomersPage
+    .eq("is_admin", false)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -174,6 +169,7 @@ export const updateUserStatus = async (
   return data;
 };
 
+// ---------------- Orders ----------------
 export const getFeaturedProducts = async (): Promise<Product[]> => {
   const { data, error } = await supabase
     .from("products")
@@ -194,7 +190,7 @@ export const getProductById = async (id: string): Promise<Product | null> => {
     .single();
 
   if (error) {
-    if (error.code === "PGRST116") return null; // Not found
+    if (error.code === "PGRST116") return null;
     throw error;
   }
   return data;
@@ -235,45 +231,17 @@ export const getOrderById = async (id: string): Promise<Order | null> => {
     throw error;
   }
 
-  if (data?.payment_receipt) {
-    let filePath = data.payment_receipt;
-
-    // If it's a full URL, reduce it to relative path
-    if (filePath.startsWith("http")) {
-      const idx = filePath.indexOf("payment-receipts/");
-      if (idx !== -1) {
-        filePath = filePath.slice(idx);
-      }
-    }
-
-    // ⚡ Don't strip "receipts/"
-    const { data: signedUrlData, error: urlError } = await supabase.storage
-      .from("receipts")
-      .createSignedUrl(filePath, 60 * 60);
-
-    if (!urlError && signedUrlData?.signedUrl) {
-      data.payment_receipt = signedUrlData.signedUrl;
-    }
-  }
-
   return data;
 };
 
-
-
 export const updateOrderStatus = async (
   orderId: string,
-  status: Order["status"],
-  receiptPath?: string
+  status: Order["status"]
 ): Promise<Order> => {
   const updates: any = {
     status,
     updated_at: new Date().toISOString(),
   };
-
-  if (receiptPath) {
-    updates.payment_receipt = receiptPath; // ✅ only the path like "payment-receipts/abc.jpg"
-  }
 
   const { data, error } = await supabase
     .from("orders")
@@ -286,23 +254,7 @@ export const updateOrderStatus = async (
   return data;
 };
 
-export const uploadPaymentReceipt = async (
-  file: File,
-  orderId: string
-): Promise<string> => {
-  const fileName = `${orderId}-${Date.now()}.${file.name.split(".").pop()}`;
-  const filePath = `payment-receipts/${fileName}`;
-
-  const { error } = await supabase.storage
-    .from("receipts")
-    .upload(filePath, file);
-
-  if (error) throw error;
-
-  return filePath; // ✅ only store the relative path
-};
-
-// Search products
+// ---------------- Search ----------------
 export const searchProducts = async (query: string): Promise<Product[]> => {
   const { data, error } = await supabase
     .from("products")
@@ -315,7 +267,6 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
   return data || [];
 };
 
-// Get products by category
 export const getProductsByCategory = async (
   category: string
 ): Promise<Product[]> => {
@@ -329,3 +280,24 @@ export const getProductsByCategory = async (
   if (error) throw error;
   return data || [];
 };
+
+export async function getOrders(): Promise<Order[]> {
+  const { data, error } = await supabase
+    .from('orders')
+    .select(`
+      id,
+      customer_name,
+      customer_email,
+      total_amount,
+      status,
+      created_at
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching orders:', error);
+    throw error;
+  }
+
+  return data as Order[];
+}

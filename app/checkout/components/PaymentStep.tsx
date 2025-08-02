@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { FC } from "react";
 import { PaystackButton } from "react-paystack";
-import PaymentUpload from "@/components/PaymentUpload";
 
 interface PaymentStepProps {
   paymentMethod: "paystack" | "bank_transfer" | null;
@@ -15,9 +14,7 @@ interface PaymentStepProps {
   paystackPublicKey: string;
   handlePaystackSuccess: (reference: any) => void;
   handlePaystackClose: () => void;
-  handleFileUpload: (file: File) => void;
-  isUploading: boolean;
-  handleBankTransferContinue: () => void;
+    handleBankTransferContinue: () => Promise<void> | void;
 }
 
 const PaymentStep: FC<PaymentStepProps> = ({
@@ -30,9 +27,6 @@ const PaymentStep: FC<PaymentStepProps> = ({
   paystackPublicKey,
   handlePaystackSuccess,
   handlePaystackClose,
-  handleFileUpload,
-  isUploading,
-  handleBankTransferContinue,
 }) => {
   return (
     <motion.div
@@ -66,7 +60,7 @@ const PaymentStep: FC<PaymentStepProps> = ({
         >
           <h3 className="font-semibold">Bank Transfer</h3>
           <p className="text-sm text-gray-600">
-            Pay by bank transfer and upload your receipt.
+            Pay by bank transfer. Confirmation will be processed manually.
           </p>
         </button>
       </div>
@@ -87,7 +81,7 @@ const PaymentStep: FC<PaymentStepProps> = ({
 
       {paymentMethod === "bank_transfer" && (
         <div className="mt-6">
-          <div className="bg-gray-50 p-4 rounded-lg mb-4">
+          <div className="bg-gray-50 p-4 rounded-lg">
             <p className="text-sm text-gray-600">
               Please transfer the total amount of
             </p>
@@ -98,27 +92,11 @@ const PaymentStep: FC<PaymentStepProps> = ({
               to the following bank account:
             </p>
             <div className="mt-2">
-              <p className="text-sm font-semibold">
-                Bank Name: Access Bank
-              </p>
-              <p className="text-sm font-semibold">
-                Account Number: 1234567890
-              </p>
-              <p className="text-sm font-semibold">
-                Account Name: ElegantShop
-              </p>
+              <p className="text-sm font-semibold">Bank Name: Access Bank</p>
+              <p className="text-sm font-semibold">Account Number: 1234567890</p>
+              <p className="text-sm font-semibold">Account Name: ElegantShop</p>
             </div>
           </div>
-          <PaymentUpload
-            onFileUpload={handleFileUpload}
-            isUploading={isUploading}
-          />
-          <button
-            onClick={handleBankTransferContinue}
-            className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-          >
-            Continue
-          </button>
         </div>
       )}
 
