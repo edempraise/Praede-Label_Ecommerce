@@ -13,78 +13,6 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const {
-    addToCart,
-    addToWishlist,
-    removeFromWishlist,
-    wishlist,
-    isInWishlist,
-    currentUserId,
-  } = useStore();
-  const { toast } = useToast();
-
-  const isProductInWishlist = currentUserId
-    ? isInWishlist(product.id, currentUserId)
-    : false;
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault();
-
-    if (!currentUserId) {
-      toast({
-        title: "Login Required",
-        description: "Please login to add items to your cart.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    addToCart(
-      product,
-      1,
-      product.size[0] || "M",
-      product.color[0] || "Default",
-      currentUserId
-    );
-    toast({
-      title: "Added to Cart",
-      description: `${product.name} has been added to your cart.`,
-    });
-  };
-
-  const handleWishlist = (e: React.MouseEvent) => {
-    e.preventDefault();
-
-    if (!currentUserId) {
-      toast({
-        title: "Login Required",
-        description: "Please login to add items to your wishlist.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (isProductInWishlist) {
-      const wishlistForUser = wishlist[currentUserId] || [];
-      const wishlistItem = wishlistForUser.find(
-        (item) => item.product.id === product.id
-      );
-      if (wishlistItem) {
-        removeFromWishlist(wishlistItem.id, currentUserId);
-        toast({
-          title: "Removed from Wishlist",
-          description: `${product.name} has been removed from your wishlist.`,
-        });
-      }
-    } else {
-      addToWishlist(product, currentUserId);
-      toast({
-        title: "Added to Wishlist",
-        description: `${product.name} has been added to your wishlist.`,
-      });
-    }
-  };
-
   return (
     <motion.div
       whileHover={{ y: -5 }}
@@ -111,21 +39,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
               %
             </div>
           )}
-
-          <div className="absolute top-2 right-2 flex flex-col space-y-2">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handleWishlist}
-              className={`p-2 rounded-full ${
-                isProductInWishlist
-                  ? "bg-red-500 text-white"
-                  : "bg-white text-gray-600"
-              } hover:bg-red-500 hover:text-white transition-colors shadow-md`}
-            >
-              <Heart className="w-4 h-4" />
-            </motion.button>
-          </div>
         </div>
       </Link>
 
@@ -158,15 +71,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
               )}
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleAddToCart}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-1"
-          >
-            <ShoppingCart className="w-4 h-4" />
-            <span>Add</span>
-          </motion.button>
+          <Link href={`/products/${product.id}`}>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-1"
+            >
+              <span>View Details</span>
+            </motion.button>
+          </Link>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-1">

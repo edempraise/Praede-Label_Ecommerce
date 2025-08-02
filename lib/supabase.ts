@@ -313,14 +313,7 @@ export const getProductsByCategory = async (
 export async function getOrders(): Promise<Order[]> {
   const { data, error } = await supabase
     .from('orders')
-    .select(`
-      id,
-      customer_name,
-      customer_email,
-      total_amount,
-      status,
-      created_at
-    `)
+    .select(`*, items(*, product(*))`)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -328,5 +321,5 @@ export async function getOrders(): Promise<Order[]> {
     throw error;
   }
 
-  return data as Order[];
+  return data as any[];
 }

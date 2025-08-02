@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { FC } from "react";
 import { CartItem } from "@/types";
+import Image from "next/image";
 
 interface CartReviewStepProps {
   userCart: CartItem[];
@@ -33,7 +34,14 @@ const CartReviewStep: FC<CartReviewStepProps> = ({
             key={item.id}
             className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
           >
-            <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
+            <div className="w-16 h-16 relative rounded-lg overflow-hidden">
+              <Image
+                src={item.product.images[0] || '/placeholder-product.jpg'}
+                alt={item.product.name}
+                fill
+                className="object-cover"
+              />
+            </div>
             <div className="flex-1">
               <h3 className="font-semibold text-gray-900">
                 {item.product.name}

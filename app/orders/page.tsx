@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import { Order } from "@/types";
+import Image from "next/image";
 
 const OrdersPage = () => {
   const router = useRouter();
@@ -23,12 +24,12 @@ const OrdersPage = () => {
         setLoading(true);
         const { data, error } = await supabase
           .from("orders")
-          .select("*")
+          .select("*, items(*, product(*))")
           .eq("customer_id", user.id)
           .order("created_at", { ascending: false });
 
         if (error) throw error;
-        setOrders(data as Order[]);
+        setOrders(data as any[]);
       } catch (error) {
         console.error("Error fetching orders:", error);
       } finally {
@@ -57,10 +58,22 @@ const OrdersPage = () => {
             className="p-4 border rounded-lg cursor-pointer hover:bg-gray-100"
             onClick={() => handleOrderClick(order.id)}
           >
-            <div className="flex justify-between">
-              <div>
-                <p className="font-semibold">Order ID: {order.id}</p>
-                <p>Total: ₦{order.total_amount.toLocaleString()}</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                {order.items && order.items.length > 0 && (
+                  <div className="w-16 h-16 relative rounded-lg overflow-hidden">
+                    <Image
+                      src={order.items[0].product.images[0] || '/placeholder-product.jpg'}
+                      alt={order.items[0].product.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div>
+                  <p className="font-semibold">Order ID: {order.id}</p>
+                  <p>Total: ₦{order.total_amount.toLocaleString()}</p>
+                </div>
               </div>
               <div>
                 <p

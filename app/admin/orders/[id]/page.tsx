@@ -11,6 +11,7 @@ import {
   Clock,
   XCircle,
 } from "lucide-react";
+import Image from "next/image";
 
 // Timeline component
 const AdminOrderTimeline = ({
@@ -202,9 +203,19 @@ const AdminOrderDetailPage = () => {
               <h3 className="text-xl font-bold mb-4">Order Items</h3>
               <ul className="divide-y divide-gray-200">
                 {order.items.map((item, index) => (
-                  <li key={index} className="py-4 flex">
-                    <div className="ml-4 flex-1 flex flex-col">
-                      <h4 className="font-semibold">{item.product.name}</h4>
+                  <li key={index} className="py-4 flex items-center">
+                    <div className="w-16 h-16 relative rounded-lg overflow-hidden mr-4">
+                      <Image
+                        src={item.product.images[0] || '/placeholder-product.jpg'}
+                        alt={item.product.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 flex flex-col">
+                      <Link href={`/products/${item.product.id}`}>
+                        <h4 className="font-semibold hover:text-blue-600">{item.product.name}</h4>
+                      </Link>
                       <p className="text-sm text-gray-500">
                         Qty: {item.quantity}
                       </p>

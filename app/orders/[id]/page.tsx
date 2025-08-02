@@ -7,6 +7,8 @@ import { MapPin, Phone, Mail } from "lucide-react";
 import OrderTimeline from "@/components/OrderTimeline";
 import { Order } from "@/types";
 import { getOrderById } from "@/lib/supabase";
+import Image from "next/image";
+import Link from "next/link";
 
 const OrderDetailPage = () => {
   const params = useParams();
@@ -106,11 +108,20 @@ const OrderDetailPage = () => {
                     key={item.id}
                     className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
                   >
-                    <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
+                    <div className="w-16 h-16 relative rounded-lg overflow-hidden">
+                      <Image
+                        src={item.product.images[0] || '/placeholder-product.jpg'}
+                        alt={item.product.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">
-                        {item.product.name}
-                      </h3>
+                      <Link href={`/products/${item.product.id}`}>
+                        <h3 className="font-semibold text-gray-900 hover:text-blue-600">
+                          {item.product.name}
+                        </h3>
+                      </Link>
                       <p className="text-sm text-gray-600">
                         Size: {item.size} | Color: {item.color} | Qty:{" "}
                         {item.quantity}

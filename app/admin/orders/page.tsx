@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Order, Product, User } from '@/types';
 import { getOrders, updateOrderStatus, getProducts, getUsers } from '@/lib/supabase';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const OrdersPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -100,6 +101,9 @@ const OrdersPage = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Product
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Order ID
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -119,6 +123,18 @@ const OrdersPage = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {orders.map((order) => (
                     <tr key={order.id}>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {order.items && order.items.length > 0 && (
+                          <div className="w-16 h-16 relative rounded-lg overflow-hidden">
+                            <Image
+                              src={order.items[0].product.images[0] || '/placeholder-product.jpg'}
+                              alt={order.items[0].product.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         <Link href={`/admin/orders/${order.id}`} className="text-blue-600 hover:underline">
                           #{order.id.substring(0, 8)}...
