@@ -223,16 +223,22 @@ import { sendOrderConfirmationEmails } from "@/app/actions/send-order-emails";
 export const createOrder = async (
   orderData: Omit<Order, "id" | "created_at" | "updated_at">
 ): Promise<Order> => {
+  console.log("🚀 Creating order:", orderData);
+
   const { data: order, error } = await supabase
     .from("orders")
     .insert(orderData)
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error("❌ Order creation failed:", error)
+    throw error;
+  }
 
   // Send emails after successful order creation
   try {
+    console.log("✅ Order created, now sending emails");
     await sendOrderConfirmationEmails(order);
   } catch (emailError) {
     console.error("Failed to send new order emails:", emailError);

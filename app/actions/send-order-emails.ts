@@ -1,39 +1,37 @@
 "use server";
 
-import { Resend } from "resend";
 import { Order } from "@/types";
+import { sendMail } from "@/lib/mailer";
 import {
   getNewOrderEmailForCustomer,
   getNewOrderEmailForAdmin,
 } from "@/lib/email-templates";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export const sendOrderConfirmationEmails = async (order: Order) => {
+  console.log("📨 Sending order emails via Gmail for order:", order.id);
+
   try {
     const customerEmail = getNewOrderEmailForCustomer(order);
     const adminEmail = getNewOrderEmailForAdmin(order);
 
-    // Send email to customer
-    await resend.emails.send({
-      from: customerEmail.from,
+    // Customer mail
+    await sendMail({
       to: customerEmail.to,
       subject: customerEmail.subject,
       html: customerEmail.html,
     });
 
-    // Send email to admin
-    await resend.emails.send({
-      from: adminEmail.from,
+    // Admin mail
+    await sendMail({
       to: adminEmail.to,
       subject: adminEmail.subject,
       html: adminEmail.html,
     });
 
-    console.log("Order confirmation emails sent successfully.");
+    console.log("✅ Both customer and admin emails sent.");
     return { success: true };
   } catch (error) {
-    console.error("Error sending order confirmation emails:", error);
-    return { success: false, error: "Failed to send emails." };
+    console.error("❌ Failed to send order emails:", error);
+    return { success: false, error };
   }
 };

@@ -4,22 +4,15 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/store/useStore";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  createOrder,
-  supabase,
-  uploadReceipt,
-} from "@/lib/supabase";
+import { supabase, uploadReceipt } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { saveShippingInfo, getShippingInfo } from "@/lib/supabase";
 import ProgressSteps from "./components/ProgressSteps";
 import CartReviewStep from "./components/CartReviewStep";
 import ShippingInfoStep from "./components/ShippingInfoStep";
+import PaymentStep from "./components/PaymentStep";
 import ReceiptUploadStep from "./components/ReceiptUploadStep";
-import dynamic from "next/dynamic";
-
-const PaymentStep = dynamic(() => import("./components/PaymentStep"), {
-  ssr: false,
-});
+import { createOrderServer } from "../actions/create-order";
 
 const CheckoutPage = () => {
   const router = useRouter();
@@ -83,7 +76,10 @@ const CheckoutPage = () => {
             state: info.state || "",
           });
         } else {
-          setOrderData((prev) => ({ ...prev, customer_email: user.email || "" }));
+          setOrderData((prev) => ({
+            ...prev,
+            customer_email: user.email || "",
+          }));
         }
       });
     }
@@ -112,7 +108,8 @@ const CheckoutPage = () => {
         });
         toast({
           title: "Shipping Info Saved",
-          description: "Your shipping information has been saved for future orders.",
+          description:
+            "Your shipping information has been saved for future orders.",
         });
       } catch (error) {
         console.error("Error saving shipping info:", error);
@@ -150,7 +147,7 @@ const CheckoutPage = () => {
         payment_reference: reference.reference, // replaced payment_receipt
       };
 
-      await createOrder(orderPayload);
+      await createOrderServer(orderPayload);
       clearCart(user.id);
       toast({
         title: "Order Placed!",
@@ -167,14 +164,18 @@ const CheckoutPage = () => {
   };
 
   const handleBankTransferContinue = () => {
-    if (paymentMethod === 'bank_transfer') {
+    if (paymentMethod === "bank_transfer") {
       setCurrentStep(4);
     }
   };
 
   const handleReceiptUploadAndCreateOrder = async (receiptFile: File) => {
     if (!user) {
-      toast({ title: "Error", description: "You must be logged in to place an order.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: "You must be logged in to place an order.",
+        variant: "destructive",
+      });
       return;
     }
     setIsUploading(true);
@@ -184,21 +185,29 @@ const CheckoutPage = () => {
       const orderPayload = {
         ...orderData,
         customer_id: user.id,
-        items: userCart,
+        items: JSON.parse(JSON.stringify(userCart)),
         total_amount: getCartTotal(user.id),
         status: "payment_review" as const,
         payment_receipt: receiptUrl,
       };
 
-      await createOrder(orderPayload);
+      console.log("Cart before sending:", userCart);
+      console.log("Sanitized cart:", JSON.parse(JSON.stringify(userCart)));
+
+      await createOrderServer(orderPayload);
       clearCart(user.id);
       toast({
         title: "Order Placed!",
-        description: "Your order has been successfully placed and is under review.",
+        description:
+          "Your order has been successfully placed and is under review.",
       });
       router.push("/orders");
-    } catch (error) {
-      console.error("Error creating order:", error);
+    } catch (error: any) {
+      console.error("Error creating order:", JSON.stringify(error, null, 2));
+      if (error?.message) console.error("Message:", error.message);
+      if (error?.stack) console.error("Stack:", error.stack);
+      if (error?.cause) console.error("Cause:", error.cause);
+
       toast({
         title: "Error",
         description: "Failed to place order. Please try again.",
