@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
-import Input from '@/components/ui/Input';
+import Input from '@/components/ui/input';
 
 interface LoginFormProps {
   formData: any;

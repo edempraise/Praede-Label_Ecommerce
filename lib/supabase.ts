@@ -1,9 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import { Product, Order, Category } from "@/types";
 
-const supabaseUrl = "https://kjnnelyffqesrmruohce.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtqbm5lbHlmZnFlc3JtcnVvaGNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyMzM4MTgsImV4cCI6MjA2NzgwOTgxOH0.S3JjHOwhH3OVJ_uFb2AdphwTtoX256LJBVcY5M52sSY";
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 if (!supabaseUrl || !supabaseKey) {
   throw new Error("Missing Supabase environment variables");
@@ -219,10 +218,7 @@ export const getCategories = async (): Promise<Category[]> => {
   return data || [];
 };
 
-import {
-  getNewOrderEmailForCustomer,
-  getNewOrderEmailForAdmin,
-} from "./email-templates";
+import { sendOrderConfirmationEmails } from "@/app/actions/send-order-emails";
 
 export const createOrder = async (
   orderData: Omit<Order, "id" | "created_at" | "updated_at">
@@ -237,15 +233,7 @@ export const createOrder = async (
 
   // Send emails after successful order creation
   try {
-    const customerEmail = getNewOrderEmailForCustomer(order);
-    await supabase.functions.invoke("send-email", {
-      body: customerEmail,
-    });
-
-    const adminEmail = getNewOrderEmailForAdmin(order);
-    await supabase.functions.invoke("send-email", {
-      body: adminEmail,
-    });
+    await sendOrderConfirmationEmails(order);
   } catch (emailError) {
     console.error("Failed to send new order emails:", emailError);
     // Don't block the order creation if email fails

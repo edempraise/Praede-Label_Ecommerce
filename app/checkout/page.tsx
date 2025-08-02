@@ -14,8 +14,12 @@ import { saveShippingInfo, getShippingInfo } from "@/lib/supabase";
 import ProgressSteps from "./components/ProgressSteps";
 import CartReviewStep from "./components/CartReviewStep";
 import ShippingInfoStep from "./components/ShippingInfoStep";
-import PaymentStep from "./components/PaymentStep";
 import ReceiptUploadStep from "./components/ReceiptUploadStep";
+import dynamic from "next/dynamic";
+
+const PaymentStep = dynamic(() => import("./components/PaymentStep"), {
+  ssr: false,
+});
 
 const CheckoutPage = () => {
   const router = useRouter();
