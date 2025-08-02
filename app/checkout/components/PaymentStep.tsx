@@ -27,6 +27,7 @@ const PaymentStep: FC<PaymentStepProps> = ({
   paystackPublicKey,
   handlePaystackSuccess,
   handlePaystackClose,
+  handleBankTransferContinue,
 }) => {
   return (
     <motion.div
