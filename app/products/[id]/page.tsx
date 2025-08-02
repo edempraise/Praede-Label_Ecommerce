@@ -5,25 +5,31 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Star, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getProductById } from '@/lib/supabase';
-import { Product } from '@/types';
+import { getProductById, getReviewsByProductId, createReview, hasUserPurchasedProduct } from '@/lib/supabase';
+import { Product, Review } from '@/types';
 import { useStore } from '@/store/useStore';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 const ProductDetailPage = () => {
   const params = useParams();
   const { id } = params;
+  const { user } = useAuth();
   const [product, setProduct] = useState<Product | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string>('');
+  const [newRating, setNewRating] = useState(0);
+  const [newComment, setNewComment] = useState('');
+  const [canReview, setCanReview] = useState(false);
   const { addToCart, currentUserId } = useStore();
   const { toast } = useToast();
 
   useEffect(() => {
-    const loadProduct = async () => {
+    const loadProductAndReviews = async () => {
       if (!id) return;
 
       try {
@@ -31,9 +37,17 @@ const ProductDetailPage = () => {
         setError(null);
         const productData = await getProductById(id as string);
         setProduct(productData);
+
         if (productData) {
           setSelectedColor(productData.color[0] || '');
           setSelectedSize(productData.size[0] || '');
+          const reviewData = await getReviewsByProductId(id as string);
+          setReviews(reviewData);
+
+          if (user) {
+            const purchased = await hasUserPurchasedProduct(user.id, id as string);
+            setCanReview(purchased);
+          }
         }
       } catch (err) {
         console.error('Error loading product:', err);
@@ -43,8 +57,8 @@ const ProductDetailPage = () => {
       }
     };
 
-    loadProduct();
-  }, [id]);
+    loadProductAndReviews();
+  }, [id, user]);
 
   const handleAddToCart = () => {
     if (!currentUserId) {
@@ -64,6 +78,47 @@ const ProductDetailPage = () => {
       });
     }
   };
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !product) return;
+
+    if (newRating === 0) {
+      toast({
+        title: 'Rating required',
+        description: 'Please select a star rating.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      const newReview = await createReview({
+        product_id: product.id,
+        user_id: user.id,
+        rating: newRating,
+        comment: newComment,
+      });
+      setReviews([newReview, ...reviews]);
+      setNewRating(0);
+      setNewComment('');
+      toast({
+        title: 'Review Submitted',
+        description: 'Thank you for your feedback!',
+      });
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to submit review. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const averageRating = reviews.length > 0
+    ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
+    : 0;
 
   if (loading) {
     return (
@@ -115,10 +170,13 @@ const ProductDetailPage = () => {
             <div className="flex items-center">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  <Star
+                    key={i}
+                    className={`w-5 h-5 ${i < Math.round(averageRating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                  />
                 ))}
               </div>
-              <span className="text-sm text-gray-600 ml-2">(4.5 stars) - 120 reviews</span>
+              <span className="text-sm text-gray-600 ml-2">({averageRating.toFixed(1)} stars) - {reviews.length} reviews</span>
             </div>
             <p className="text-gray-700">{product.description}</p>
             <div className="flex items-center space-x-2">
@@ -201,36 +259,64 @@ const ProductDetailPage = () => {
         {/* Reviews Section */}
         <div className="mt-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Ratings & Reviews</h2>
-          {/* Placeholder for reviews */}
-          <div className="bg-gray-50 p-6 rounded-lg">
-            <p className="text-gray-600">No reviews yet. Be the first to review this product!</p>
-          </div>
+          {reviews.length > 0 ? (
+            <div className="space-y-6">
+              {reviews.map((review) => (
+                <div key={review.id} className="border-b pb-4">
+                  <div className="flex items-center mb-2">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-5 h-5 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-600 ml-2">by {review.user.email}</span>
+                  </div>
+                  <p className="text-gray-700">{review.comment}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <p className="text-gray-600">No reviews yet. Be the first to review this product!</p>
+            </div>
+          )}
 
           {/* Review Submission Form */}
-          <div className="mt-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">Write a Review</h3>
-            <form>
-              <div className="flex items-center mb-4">
-                <span className="mr-2">Your Rating:</span>
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-6 h-6 text-gray-300 cursor-pointer" />
-                  ))}
+          {canReview && (
+            <div className="mt-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Write a Review</h3>
+              <form onSubmit={handleReviewSubmit}>
+                <div className="flex items-center mb-4">
+                  <span className="mr-2">Your Rating:</span>
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-6 h-6 cursor-pointer ${i < newRating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                        onClick={() => setNewRating(i + 1)}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <textarea
-                rows={4}
-                placeholder="Write your review here..."
-                className="w-full p-3 border rounded-lg"
-              ></textarea>
-              <button
-                type="submit"
-                className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-              >
-                Submit Review
-              </button>
-            </form>
-          </div>
+                <textarea
+                  rows={4}
+                  placeholder="Write your review here..."
+                  className="w-full p-3 border rounded-lg"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                ></textarea>
+                <button
+                  type="submit"
+                  className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+                >
+                  Submit Review
+                </button>
+              </form>
+            </div>
+          )}
         </div>
       </div>
     </div>

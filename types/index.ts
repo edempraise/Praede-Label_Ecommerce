@@ -11,6 +11,7 @@ export interface Product {
   in_stock: boolean;
   featured: boolean;
   is_visible: boolean;
+  average_rating: number;
   created_at: string;
   updated_at: string;
 }

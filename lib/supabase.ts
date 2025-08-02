@@ -328,3 +328,44 @@ export async function getOrders(): Promise<Order[]> {
 
   return data as any[];
 }
+
+// ---------------- Reviews ----------------
+export const getReviewsByProductId = async (productId: string) => {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("*, user:users(id, email)")
+    .eq("product_id", productId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+};
+
+export const createReview = async (review: {
+  product_id: string;
+  user_id: string;
+  rating: number;
+  comment: string;
+}) => {
+  const { data, error } = await supabase.from("reviews").insert(review).select().single();
+
+  if (error) throw error;
+  return data;
+};
+
+export const hasUserPurchasedProduct = async (userId: string, productId: string): Promise<boolean> => {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('id, items')
+    .eq('customer_id', userId)
+    .eq('status', 'delivered');
+
+  if (error) {
+    console.error('Error fetching user orders:', error);
+    return false;
+  }
+
+  return data.some(order =>
+    order.items.some((item: any) => item.product_id === productId)
+  );
+};

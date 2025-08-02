@@ -52,10 +52,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <div className="flex items-center mb-2">
           <div className="flex items-center">
             {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+              <Star
+                key={i}
+                className={`w-4 h-4 ${i < Math.round(product.average_rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+              />
             ))}
           </div>
-          <span className="text-sm text-gray-600 ml-2">(4.5)</span>
+          <span className="text-sm text-gray-600 ml-2">({product.average_rating?.toFixed(1) || 0.0})</span>
         </div>
 
         <div className="flex items-center justify-between">
