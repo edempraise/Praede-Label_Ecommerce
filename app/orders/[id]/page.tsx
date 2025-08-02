@@ -94,6 +94,13 @@ const OrderDetailPage = () => {
           </p>
         </motion.div>
 
+        {order.status === 'cancelled' && (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-md">
+            <h3 className="font-bold">Order Cancelled</h3>
+            <p><strong>Reason:</strong> {order.cancellation_reason || 'No reason provided.'}</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Order Details */}
           <div className="lg:col-span-2 space-y-6">

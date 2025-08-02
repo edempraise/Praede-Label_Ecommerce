@@ -115,6 +115,8 @@ const AdminOrderDetailPage = () => {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState("");
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -138,19 +140,30 @@ const AdminOrderDetailPage = () => {
     fetchOrder();
   }, [id]);
 
-  const handleStatusUpdate = async (newStatus: Order["status"]) => {
+  const handleStatusUpdate = async (newStatus: Order["status"], reason?: string) => {
     if (!order) return;
     try {
-      const updatedOrder = await updateOrderStatus(order.id, newStatus);
+      const updatedOrder = await updateOrderStatus(order.id, newStatus, reason);
       if (!updatedOrder) {
         alert("Order not found or you don’t have permission to update.");
         return;
       }
       setOrder(updatedOrder);
+      if (newStatus === 'cancelled') {
+        setCancelModalOpen(false);
+      }
     } catch (err) {
       console.error("Failed to update order status:", err);
       alert("Failed to update order status.");
     }
+  };
+
+  const handleCancelOrder = () => {
+    if (!cancellationReason) {
+      alert("Please provide a reason for cancellation.");
+      return;
+    }
+    handleStatusUpdate("cancelled", cancellationReason);
   };
 
   if (loading) {
@@ -268,9 +281,50 @@ const AdminOrderDetailPage = () => {
                 </>
               )}
             </div>
+            {order.status !== 'cancelled' && (
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-xl font-bold mb-4">Actions</h3>
+                <button
+                  onClick={() => setCancelModalOpen(true)}
+                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                >
+                  Cancel Order
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {isCancelModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h3 className="text-xl font-bold mb-4">Cancel Order</h3>
+            <p className="mb-4">Please provide a reason for cancelling this order.</p>
+            <textarea
+              value={cancellationReason}
+              onChange={(e) => setCancellationReason(e.target.value)}
+              className="w-full p-2 border rounded-md"
+              rows={4}
+              placeholder="Cancellation reason..."
+            />
+            <div className="mt-4 flex justify-end space-x-2">
+              <button
+                onClick={() => setCancelModalOpen(false)}
+                className="bg-gray-300 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-400"
+              >
+                Close
+              </button>
+              <button
+                onClick={handleCancelOrder}
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+              >
+                Confirm Cancellation
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

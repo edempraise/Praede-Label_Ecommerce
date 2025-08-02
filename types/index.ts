@@ -38,8 +38,9 @@ export interface Order {
   state: string;
   items: CartItem[];
   total_amount: number;
-  status: 'pending' | 'payment_review' | 'paid' | 'preparing' | 'ready_for_delivery' | 'shipped' | 'delivered';
+  status: 'pending' | 'payment_review' | 'paid' | 'preparing' | 'ready_for_delivery' | 'shipped' | 'delivered' | 'cancelled';
   payment_receipt?: string;
+  cancellation_reason?: string;
   created_at: string;
   updated_at: string;
   user?: User;

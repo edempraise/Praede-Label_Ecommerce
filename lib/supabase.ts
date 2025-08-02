@@ -265,12 +265,17 @@ export const getOrderById = async (id: string): Promise<Order | null> => {
 
 export const updateOrderStatus = async (
   orderId: string,
-  status: Order["status"]
+  status: Order["status"],
+  cancellationReason?: string
 ): Promise<Order> => {
   const updates: any = {
     status,
     updated_at: new Date().toISOString(),
   };
+
+  if (status === "cancelled" && cancellationReason) {
+    updates.cancellation_reason = cancellationReason;
+  }
 
   const { data, error } = await supabase
     .from("orders")
