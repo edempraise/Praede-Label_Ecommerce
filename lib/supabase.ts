@@ -333,7 +333,7 @@ export async function getOrders(): Promise<Order[]> {
 export const getReviewsByProductId = async (productId: string) => {
   const { data, error } = await supabase
     .from("reviews")
-    .select("*, user:users(id, email)")
+    .select("*, user:users(id, email, full_name)")
     .eq("product_id", productId)
     .order("created_at", { ascending: false });
 
