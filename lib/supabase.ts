@@ -44,11 +44,11 @@ export const updateProductVisibility = async (
     .from("products")
     .update({ is_visible })
     .eq("id", productId)
-    .select()
-    .single();
+    .select();
 
   if (error) throw error;
-  return data;
+  if (!data || data.length === 0) throw new Error("No product updated");
+  return data[0];
 };
 
 export const deleteProduct = async (productId: string): Promise<void> => {
