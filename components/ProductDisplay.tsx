@@ -73,6 +73,29 @@ const ProductDisplay = ({
           </div>
         )}
         <p className="text-gray-700">{product.description}</p>
+
+        {/* Category */}
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">Category</h3>
+          <p className="text-gray-600">{product.category}</p>
+        </div>
+
+        {/* Quantity */}
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">Quantity in Stock</h3>
+          <p className="text-gray-600">{product.quantity}</p>
+        </div>
+
+        {/* Delivery Options */}
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">Delivery Options</h3>
+          <div className="flex flex-wrap gap-2">
+            {product.delivery_options.map((option) => (
+              <span key={option} className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">{option}</span>
+            ))}
+          </div>
+        </div>
+
         <div className="flex items-center space-x-2">
           <span className="text-3xl font-bold text-gray-900">
             ₦{product.price.toLocaleString()}
