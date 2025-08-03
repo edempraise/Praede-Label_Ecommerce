@@ -2,21 +2,31 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Product } from '@/types';
-import { getProductById, updateProduct, deleteProduct } from '@/lib/supabase';
+import { Product, Review } from '@/types';
+import { getProductById, updateProduct, deleteProduct, getReviewsByProductId } from '@/lib/supabase';
 import Link from 'next/link';
-import { ArrowLeft, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Edit, Star } from 'lucide-react';
+import Image from 'next/image';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const ProductEditPage = () => {
     const { id } = useParams();
     const router = useRouter();
     const [product, setProduct] = useState<Partial<Product> | null>(null);
+    const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [editingField, setEditingField] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchProduct = async () => {
+        const fetchProductAndReviews = async () => {
             if (!id) return;
             try {
                 setLoading(true);
@@ -25,6 +35,8 @@ const ProductEditPage = () => {
                     setError('Product not found.');
                 } else {
                     setProduct(fetchedProduct);
+                    const fetchedReviews = await getReviewsByProductId(id as string);
+                    setReviews(fetchedReviews);
                 }
             } catch (err) {
                 console.error('Error fetching product:', err);
@@ -34,7 +46,7 @@ const ProductEditPage = () => {
             }
         };
 
-        fetchProduct();
+        fetchProductAndReviews();
     }, [id]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -90,6 +102,35 @@ const ProductEditPage = () => {
     if (error) return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
     if (!product) return <div className="flex justify-center items-center h-screen">Product not found.</div>;
 
+    const averageRating = reviews.length > 0
+        ? reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length
+        : 0;
+
+    const renderEditableField = (field: keyof Product, label: string, type: 'text' | 'textarea' | 'number' | 'checkbox' = 'text') => {
+        if (editingField === field) {
+            return (
+                <div>
+                    <label htmlFor={field} className="block text-sm font-medium text-gray-700">{label}</label>
+                    {type === 'textarea' ? (
+                        <textarea name={field} id={field} value={product[field] as string || ''} onChange={handleInputChange} rows={4} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
+                    ) : (
+                        <input type={type} name={field} id={field} value={product[field] as any || ''} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
+                    )}
+                    <button onClick={() => setEditingField(null)} className="text-sm text-blue-600 mt-1">Done</button>
+                </div>
+            );
+        }
+        return (
+            <div className="flex justify-between items-center">
+                <div>
+                    <span className="font-bold">{label}: </span>
+                    <span>{Array.isArray(product[field]) ? (product[field] as string[]).join(', ') : product[field]?.toString()}</span>
+                </div>
+                <button onClick={() => setEditingField(field)} className="text-blue-600"><Edit className="w-4 h-4" /></button>
+            </div>
+        );
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 p-8">
             <div className="max-w-4xl mx-auto">
@@ -99,61 +140,77 @@ const ProductEditPage = () => {
                 </Link>
 
                 <div className="bg-white p-8 rounded-lg shadow-md">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit {product.name}</h1>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <Carousel className="w-full max-w-xs">
+                            <CarouselContent>
+                                {product.images?.map((image, index) => (
+                                    <CarouselItem key={index}>
+                                        <div className="p-1">
+                                            <div className="relative aspect-square rounded-lg overflow-hidden">
+                                                <Image
+                                                    src={image || '/placeholder-product.jpg'}
+                                                    alt={`${product.name} image ${index + 1}`}
+                                                    fill
+                                                    className="object-cover"
+                                                />
+                                            </div>
+                                        </div>
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <CarouselPrevious />
+                            <CarouselNext />
+                        </Carousel>
 
-                    <div className="space-y-6">
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Product Name</label>
-                            <input type="text" name="name" id="name" value={product.name || ''} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                        </div>
-
-                        <div>
-                            <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea name="description" id="description" value={product.description || ''} onChange={handleInputChange} rows={4} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price (in Kobo/Cents)</label>
-                                <input type="number" name="price" id="price" value={product.price || 0} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                            </div>
-                             <div>
-                                <label htmlFor="original_price" className="block text-sm font-medium text-gray-700">Original Price (Optional)</label>
-                                <input type="number" name="original_price" id="original_price" value={product.original_price || 0} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                            </div>
-                            <div>
-                                <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-                                <input type="text" name="category" id="category" value={product.category || ''} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label htmlFor="images" className="block text-sm font-medium text-gray-700">Images (comma-separated URLs)</label>
-                            <textarea name="images" id="images" value={product.images?.join(', ') || ''} onChange={handleInputChange} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                        </div>
-                        <div>
-                            <label htmlFor="size" className="block text-sm font-medium text-gray-700">Sizes (comma-separated)</label>
-                            <input type="text" name="size" id="size" value={product.size?.join(', ') || ''} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                        </div>
-                        <div>
-                            <label htmlFor="color" className="block text-sm font-medium text-gray-700">Colors (comma-separated)</label>
-                            <input type="text" name="color" id="color" value={product.color?.join(', ') || ''} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" />
-                        </div>
-
-                        <div className="flex items-start space-x-8 pt-4">
+                        <div className="space-y-6">
+                            {renderEditableField('name', 'Product Name')}
                             <div className="flex items-center">
-                                <input id="in_stock" name="in_stock" type="checkbox" checked={product.in_stock || false} onChange={handleCheckboxChange} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                                <label htmlFor="in_stock" className="ml-2 block text-sm text-gray-900">In Stock</label>
+                                <div className="flex items-center">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star
+                                            key={i}
+                                            className={`w-5 h-5 ${i < Math.round(averageRating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                                        />
+                                    ))}
+                                </div>
+                                <span className="text-sm text-gray-600 ml-2">({averageRating.toFixed(1)} stars) - {reviews.length} reviews</span>
                             </div>
-                            <div className="flex items-center">
-                                <input id="featured" name="featured" type="checkbox" checked={product.featured || false} onChange={handleCheckboxChange} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                                <label htmlFor="featured" className="ml-2 block text-sm text-gray-900">Featured Product</label>
-                            </div>
-                            <div className="flex items-center">
-                                <input id="is_visible" name="is_visible" type="checkbox" checked={product.is_visible ?? true} onChange={handleCheckboxChange} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                                <label htmlFor="is_visible" className="ml-2 block text-sm text-gray-900">Visible to Customers</label>
-                            </div>
+                            {renderEditableField('description', 'Description', 'textarea')}
+                            {renderEditableField('price', 'Price', 'number')}
+                            {renderEditableField('original_price', 'Original Price', 'number')}
+                            {renderEditableField('category', 'Category')}
+                            {renderEditableField('size', 'Sizes (comma-separated)')}
+                            {renderEditableField('color', 'Colors (comma-separated)')}
+                            {renderEditableField('images', 'Images (comma-separated URLs)', 'textarea')}
                         </div>
+                    </div>
+
+                    <div className="mt-12">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Ratings & Reviews</h2>
+                        {reviews.length > 0 ? (
+                            <div className="space-y-6">
+                                {reviews.map((review) => (
+                                    <div key={review.id} className="border-b pb-4">
+                                        <div className="flex items-center mb-2">
+                                            <div className="flex items-center">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <Star
+                                                        key={i}
+                                                        className={`w-5 h-5 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <span className="text-sm text-gray-600 ml-2">by {review.user.email || "Anonymous"}</span>
+                                        </div>
+                                        <p className="text-gray-700">{review.comment}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-gray-50 p-6 rounded-lg">
+                                <p className="text-gray-600">No reviews yet.</p>
+                            </div>
+                        )}
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-gray-200 flex justify-between items-center">
