@@ -12,6 +12,9 @@ export interface Product {
   featured: boolean;
   is_visible: boolean;
   average_rating: number;
+  quantity: number;
+  discount?: number;
+  delivery_options: string[];
   created_at: string;
   updated_at: string;
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Product, Review } from '@/types';
-import { getProductById, updateProduct, deleteProduct, getReviewsByProductId } from '@/lib/supabase';
+import { getProductById, updateProduct, deleteProduct, getReviewsByProductId, getCategories } from '@/lib/supabase';
 import Link from 'next/link';
 import { ArrowLeft, Save, Trash2, Edit, Star } from 'lucide-react';
 import Image from 'next/image';
@@ -20,6 +20,7 @@ const ProductEditPage = () => {
     const router = useRouter();
     const [product, setProduct] = useState<Partial<Product> | null>(null);
     const [reviews, setReviews] = useState<Review[]>([]);
+    const [categories, setCategories] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -30,7 +31,11 @@ const ProductEditPage = () => {
             if (!id) return;
             try {
                 setLoading(true);
-                const fetchedProduct = await getProductById(id as string);
+                const [fetchedProduct, fetchedCategories] = await Promise.all([
+                    getProductById(id as string),
+                    getCategories()
+                ]);
+
                 if (!fetchedProduct) {
                     setError('Product not found.');
                 } else {
@@ -38,6 +43,7 @@ const ProductEditPage = () => {
                     const fetchedReviews = await getReviewsByProductId(id as string);
                     setReviews(fetchedReviews);
                 }
+                setCategories(fetchedCategories);
             } catch (err) {
                 console.error('Error fetching product:', err);
                 setError('Failed to fetch product details.');
@@ -55,9 +61,6 @@ const ProductEditPage = () => {
         let processedValue: any = value;
         if (type === 'number') {
             processedValue = value ? parseFloat(value) : 0;
-        }
-        if (name === 'size' || name === 'color' || name === 'images') {
-            processedValue = value.split(',').map(s => s.trim()).filter(Boolean);
         }
 
         setProduct(prev => prev ? { ...prev, [name]: processedValue } : null);
@@ -178,10 +181,42 @@ const ProductEditPage = () => {
                             {renderEditableField('description', 'Description', 'textarea')}
                             {renderEditableField('price', 'Price', 'number')}
                             {renderEditableField('original_price', 'Original Price', 'number')}
-                            {renderEditableField('category', 'Category')}
+                            {renderEditableField('quantity', 'Quantity', 'number')}
+                            {renderEditableField('discount', 'Discount', 'number')}
+                            {renderEditableField('delivery_options', 'Delivery Options (comma-separated)')}
+                            {editingField === 'category' ? (
+                                <div>
+                                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+                                    <select name="category" id="category" value={product.category || ''} onChange={handleInputChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                        {categories.map(category => (
+                                            <option key={category.id} value={category.name}>{category.name}</option>
+                                        ))}
+                                    </select>
+                                    <button onClick={() => setEditingField(null)} className="text-sm text-blue-600 mt-1">Done</button>
+                                </div>
+                            ) : (
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <span className="font-bold">Category: </span>
+                                        <span>{product.category}</span>
+                                    </div>
+                                    <button onClick={() => setEditingField('category')} className="text-blue-600"><Edit className="w-4 h-4" /></button>
+                                </div>
+                            )}
                             {renderEditableField('size', 'Sizes (comma-separated)')}
                             {renderEditableField('color', 'Colors (comma-separated)')}
-                            {renderEditableField('images', 'Images (comma-separated URLs)', 'textarea')}
+                            <div>
+                                <label htmlFor="images" className="block text-sm font-medium text-gray-700">Images</label>
+                                <input type="file" name="images" id="images" multiple onChange={(e) => {
+                                    if (e.target.files) {
+                                        const files = Array.from(e.target.files);
+                                        // Here you would typically upload the files and get back URLs
+                                        // For now, we'll just store the file names
+                                        const fileNames = files.map(file => file.name);
+                                        setProduct(prev => prev ? { ...prev, images: [...(prev.images || []), ...fileNames] } : null);
+                                    }
+                                }} className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
+                            </div>
                         </div>
                     </div>
 
