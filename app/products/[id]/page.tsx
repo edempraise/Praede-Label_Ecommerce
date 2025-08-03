@@ -14,6 +14,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import ProductDisplay from '@/components/ProductDisplay';
 import { useStore } from '@/store/useStore';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -152,120 +153,42 @@ const ProductDetailPage = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Product Images */}
-          <Carousel className="w-full max-w-xs">
-            <CarouselContent>
-              {product.images.map((image, index) => (
-                <CarouselItem key={index}>
-                  <div className="p-1">
-                    <div className="relative aspect-square rounded-lg overflow-hidden">
-                      <Image
-                        src={image || '/placeholder-product.jpg'}
-                        alt={`${product.name} image ${index + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
-
-          {/* Product Details */}
-          <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
-            <div className="flex items-center">
-              <div className="flex items-center">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-5 h-5 ${i < Math.round(averageRating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-gray-600 ml-2">({averageRating.toFixed(1)} stars) - {reviews.length} reviews</span>
-            </div>
-            <p className="text-gray-700">{product.description}</p>
+        <ProductDisplay
+          product={product}
+          averageRating={averageRating}
+          reviewsCount={reviews.length}
+          selectedColor={selectedColor}
+          onColorChange={setSelectedColor}
+          selectedSize={selectedSize}
+          onSizeChange={setSelectedSize}
+        >
+          <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <span className="text-3xl font-bold text-gray-900">
-                ₦{product.price.toLocaleString()}
-              </span>
-              {product.original_price && product.original_price > product.price && (
-                <span className="text-xl text-gray-500 line-through">
-                  ₦{product.original_price.toLocaleString()}
-                </span>
-              )}
-            </div>
-
-            {/* Color Selector */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">Color</h3>
-              <div className="flex space-x-2">
-                {product.color.map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className={`px-4 py-2 rounded-lg border ${
-                      selectedColor === color ? 'border-blue-600 ring-2 ring-blue-500' : 'border-gray-300'
-                    }`}
-                  >
-                    {color}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Size Selector */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">Size</h3>
-              <div className="flex space-x-2">
-                {product.size.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-4 py-2 rounded-lg border ${
-                      selectedSize === size ? 'border-blue-600 ring-2 ring-blue-500' : 'border-gray-300'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Quantity and Add to Cart */}
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="p-2 border rounded-full hover:bg-gray-100"
-                >
-                  <Minus className="w-4 h-4" />
-                </button>
-                <span className="w-8 text-center font-medium">{quantity}</span>
-                <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="p-2 border rounded-full hover:bg-gray-100"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleAddToCart}
-                className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center justify-center space-x-2"
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="p-2 border rounded-full hover:bg-gray-100"
               >
-                <ShoppingCart className="w-5 h-5" />
-                <span>Add to Cart</span>
-              </motion.button>
+                <Minus className="w-4 h-4" />
+              </button>
+              <span className="w-8 text-center font-medium">{quantity}</span>
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                className="p-2 border rounded-full hover:bg-gray-100"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
             </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleAddToCart}
+              className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center justify-center space-x-2"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              <span>Add to Cart</span>
+            </motion.button>
           </div>
-        </div>
+        </ProductDisplay>
 
         {/* Reviews Section */}
         <div className="mt-12">
