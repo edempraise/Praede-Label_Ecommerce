@@ -7,6 +7,13 @@ import { Star, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getProductById, getReviewsByProductId, createReview } from '@/lib/supabase';
 import { Product, Review } from '@/types';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { useStore } from '@/store/useStore';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -147,17 +154,26 @@ const ProductDetailPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Product Images */}
-          <div>
-            <div className="relative aspect-square rounded-lg overflow-hidden">
-              <Image
-                src={product.images[0] || '/placeholder-product.jpg'}
-                alt={product.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-            {/* Thumbnails can be added here */}
-          </div>
+          <Carousel className="w-full max-w-xs">
+            <CarouselContent>
+              {product.images.map((image, index) => (
+                <CarouselItem key={index}>
+                  <div className="p-1">
+                    <div className="relative aspect-square rounded-lg overflow-hidden">
+                      <Image
+                        src={image || '/placeholder-product.jpg'}
+                        alt={`${product.name} image ${index + 1}`}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
 
           {/* Product Details */}
           <div className="space-y-6">
