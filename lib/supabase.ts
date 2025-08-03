@@ -52,12 +52,68 @@ export const updateProductVisibility = async (
 };
 
 export const deleteProduct = async (productId: string): Promise<void> => {
-  const { error } = await supabase
+  // Step 1: Fetch product first (to get image paths)
+  const { data: product, error: fetchError } = await supabase
+    .from("products")
+    .select("images")
+    .eq("id", productId)
+    .maybeSingle();
+
+  if (fetchError || !product) {
+    throw fetchError || new Error("Product not found");
+  }
+
+  // Step 2: Delete from storage if images exist
+  if (product.images && product.images.length > 0) {
+    const paths: string[] = product.images
+      .map((url: string): string | null => {
+        try {
+          // Extract everything after `/object/public/products/`
+          const decoded = decodeURIComponent(url);
+          const path = decoded.split("/object/public/products/")[1];
+          return path || null;
+        } catch (err) {
+          console.error("❌ Failed to parse image path from URL:", url, err);
+          return null;
+        }
+      })
+      .filter((path: string | null): path is string => path !== null); // 👈 type explicitly added
+
+    if (paths.length > 0) {
+      const { error: storageError } = await supabase.storage
+        .from("products")
+        .remove(paths);
+
+      if (storageError) {
+        console.error("❌ Failed to delete product images:", storageError);
+      } else {
+        console.log("✅ Deleted product images:", paths);
+      }
+    }
+  }
+
+  // Step 3: Delete reviews linked to this product
+  const { error: reviewError } = await supabase
+    .from("reviews")
+    .delete()
+    .eq("product_id", productId);
+
+  if (reviewError) {
+    console.error("❌ Failed to delete product reviews:", reviewError);
+  }
+
+  // Step 4: Finally delete the product
+  const { error: deleteError } = await supabase
     .from("products")
     .delete()
     .eq("id", productId);
 
-  if (error) throw error;
+  if (deleteError) {
+    console.error("❌ Failed to delete product:", deleteError);
+    throw deleteError;
+  }
+
+  console.log("✅ Product fully deleted:", productId);
 };
 
 // ---------------- Logos ----------------
@@ -82,16 +138,16 @@ export const uploadLogo = async (file: File): Promise<string> => {
 };
 
 export const uploadReceipt = async (file: File): Promise<string> => {
-	const fileName = `receipt-${Date.now()}.${file.name.split(".").pop()}`;
+  const fileName = `receipt-${Date.now()}.${file.name.split(".").pop()}`;
 
-	const { error } = await supabase.storage
-		.from("receipts")
-		.upload(fileName, file, { contentType: file.type });
+  const { error } = await supabase.storage
+    .from("receipts")
+    .upload(fileName, file, { contentType: file.type });
 
-	if (error) throw error;
+  if (error) throw error;
 
-	const { data } = supabase.storage.from("receipts").getPublicUrl(fileName);
-	return data.publicUrl;
+  const { data } = supabase.storage.from("receipts").getPublicUrl(fileName);
+  return data.publicUrl;
 };
 
 // ---------------- Settings ----------------
@@ -187,7 +243,7 @@ export const getFeaturedProducts = async (): Promise<Product[]> => {
     .from("products")
     .select("*")
     .eq("featured", true)
-    .eq("in_stock", true)
+    .gt("quantity", 0)
     .limit(8);
 
   if (error) throw error;
@@ -232,8 +288,25 @@ export const createOrder = async (
     .single();
 
   if (error) {
-    console.error("❌ Order creation failed:", error)
+    console.error("❌ Order creation failed:", error);
     throw error;
+  }
+
+  // Decrement product quantities
+  if (orderData.items && orderData.items.length > 0) {
+    for (const item of orderData.items) {
+      const { error: updateError } = await supabase.rpc("decrement_quantity", {
+        pid: item.product.id,
+        qty: item.quantity,
+      });
+
+      if (updateError) {
+        console.error(
+          `❌ Failed to update product ${item.product.id}`,
+          updateError
+        );
+      }
+    }
   }
 
   // Send emails after successful order creation
@@ -242,7 +315,6 @@ export const createOrder = async (
     await sendOrderConfirmationEmails(order);
   } catch (emailError) {
     console.error("Failed to send new order emails:", emailError);
-    // Don't block the order creation if email fails
   }
 
   return order;
@@ -294,7 +366,7 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
     .from("products")
     .select("*")
     .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
-    .eq("in_stock", true)
+    .gt("quantity", 0)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -308,7 +380,7 @@ export const getProductsByCategory = async (
     .from("products")
     .select("*")
     .eq("category", category)
-    .eq("in_stock", true)
+    .gt("quantity", 0)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -317,12 +389,12 @@ export const getProductsByCategory = async (
 
 export async function getOrders(): Promise<Order[]> {
   const { data, error } = await supabase
-    .from('orders')
+    .from("orders")
     .select(`*`)
-    .order('created_at', { ascending: false });
+    .order("created_at", { ascending: false });
 
   if (error) {
-    console.error('Error fetching orders:', error);
+    console.error("Error fetching orders:", error);
     throw error;
   }
 
@@ -347,7 +419,11 @@ export const createReview = async (review: {
   rating: number;
   comment: string;
 }) => {
-  const { data, error } = await supabase.from("reviews").insert(review).select().single();
+  const { data, error } = await supabase
+    .from("reviews")
+    .insert(review)
+    .select()
+    .single();
 
   if (error) throw error;
   return data;

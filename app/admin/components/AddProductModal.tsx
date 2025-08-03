@@ -68,7 +68,6 @@ const AddProductModal = ({
         size: formData.size.filter((s) => s.trim() !== ""),
         color: formData.color.filter((c) => c.trim() !== ""),
         images: imageUrls,
-        in_stock: formData.quantity > 0,
         quantity: formData.quantity,
         delivery_options: formData.delivery_options,
         featured: false,
