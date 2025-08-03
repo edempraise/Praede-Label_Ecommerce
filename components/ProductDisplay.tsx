@@ -90,7 +90,7 @@ const ProductDisplay = ({
         <div>
           <h3 className="text-sm font-semibold text-gray-900 mb-2">Delivery Options</h3>
           <div className="flex flex-wrap gap-2">
-            {product.delivery_options.map((option) => (
+            {product.delivery_options?.map((option) => (
               <span key={option} className="px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">{option}</span>
             ))}
           </div>
@@ -111,7 +111,7 @@ const ProductDisplay = ({
         <div>
           <h3 className="text-sm font-semibold text-gray-900 mb-2">Color</h3>
           <div className="flex space-x-2">
-            {product.color.map((color) => (
+            {product.color?.map((color) => (
               <button
                 key={color}
                 onClick={() => onColorChange(color)}
@@ -129,7 +129,7 @@ const ProductDisplay = ({
         <div>
           <h3 className="text-sm font-semibold text-gray-900 mb-2">Size</h3>
           <div className="flex space-x-2">
-            {product.size.map((size) => (
+            {product.size?.map((size) => (
               <button
                 key={size}
                 onClick={() => onSizeChange(size)}
