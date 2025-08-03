@@ -7,12 +7,56 @@ import { motion } from "framer-motion";
 import { Product } from "@/types";
 import { useStore } from "@/store/useStore";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
+  const {
+    addToWishlist,
+    removeFromWishlist,
+    isInWishlist,
+    currentUserId,
+  } = useStore();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const isWishlisted = currentUserId
+    ? isInWishlist(product.id, currentUserId)
+    : false;
+
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent link navigation
+    if (!currentUserId) {
+      toast({
+        title: "Please log in",
+        description: "You need to be logged in to add items to your wishlist.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isWishlisted) {
+      const wishlistItem = useStore
+        .getState()
+        .wishlist[currentUserId]?.find((i) => i.product.id === product.id);
+      if (wishlistItem) {
+        removeFromWishlist(wishlistItem.id, currentUserId);
+        toast({
+          title: "Removed from wishlist",
+          description: `${product.name} has been removed from your wishlist.`,
+        });
+      }
+    } else {
+      addToWishlist(product, currentUserId);
+      toast({
+        title: "Added to wishlist",
+        description: `${product.name} has been added to your wishlist.`,
+      });
+    }
+  };
+
   return (
     <motion.div
       whileHover={{ y: -5 }}
@@ -39,6 +83,20 @@ const ProductCard = ({ product }: ProductCardProps) => {
               %
             </div>
           )}
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={handleWishlistClick}
+            className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors"
+          >
+            <Heart
+              className={`w-5 h-5 ${
+                isWishlisted
+                  ? "text-red-500 fill-current"
+                  : "text-gray-500"
+              }`}
+            />
+          </motion.button>
         </div>
       </Link>
 
