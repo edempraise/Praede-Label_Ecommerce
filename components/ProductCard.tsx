@@ -14,48 +14,79 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const {
+    const {
+    addToCart,
     addToWishlist,
     removeFromWishlist,
+    wishlist,
     isInWishlist,
     currentUserId,
   } = useStore();
   const { toast } = useToast();
-  const { user } = useAuth();
-  const isWishlisted = currentUserId
+
+  const isProductInWishlist = currentUserId
     ? isInWishlist(product.id, currentUserId)
     : false;
 
-  const handleWishlistClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent link navigation
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+
     if (!currentUserId) {
       toast({
-        title: "Please log in",
-        description: "You need to be logged in to add items to your wishlist.",
+        title: "Login Required",
+        description: "Please login to add items to your cart.",
         variant: "destructive",
       });
       return;
     }
 
-    if (isWishlisted) {
-      const wishlistItem = useStore
-        .getState()
-        .wishlist[currentUserId]?.find((i) => i.product.id === product.id);
+    addToCart(
+      product,
+      1,
+      product.size[0] || "M",
+      product.color[0] || "Default",
+      currentUserId
+    );
+    toast({
+      title: "Added to Cart",
+      description: `${product.name} has been added to your cart.`,
+    });
+  };
+
+  const handleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    if (!currentUserId) {
+      toast({
+        title: "Login Required",
+        description: "Please login to add items to your wishlist.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isProductInWishlist) {
+      const wishlistForUser = wishlist[currentUserId] || [];
+      const wishlistItem = wishlistForUser.find(
+        (item) => item.product.id === product.id
+      );
       if (wishlistItem) {
         removeFromWishlist(wishlistItem.id, currentUserId);
         toast({
-          title: "Removed from wishlist",
+          title: "Removed from Wishlist",
           description: `${product.name} has been removed from your wishlist.`,
         });
       }
     } else {
       addToWishlist(product, currentUserId);
       toast({
-        title: "Added to wishlist",
+        title: "Added to Wishlist",
         description: `${product.name} has been added to your wishlist.`,
       });
     }
   };
+
+
 
   return (
     <motion.div
@@ -86,12 +117,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            onClick={handleWishlistClick}
+            onClick={handleWishlist}
             className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors"
           >
             <Heart
               className={`w-5 h-5 ${
-                isWishlisted
+                wishlist
                   ? "text-red-500 fill-current"
                   : "text-gray-500"
               }`}
