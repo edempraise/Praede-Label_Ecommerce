@@ -10,7 +10,10 @@ import { saveShippingInfo, getShippingInfo } from "@/lib/supabase";
 import ProgressSteps from "./components/ProgressSteps";
 import CartReviewStep from "./components/CartReviewStep";
 import ShippingInfoStep from "./components/ShippingInfoStep";
-import PaymentStep from "./components/PaymentStep";
+import dynamic from "next/dynamic";
+const PaymentStep = dynamic(() => import("./components/PaymentStep"), {
+  ssr: false,
+});
 import ReceiptUploadStep from "./components/ReceiptUploadStep";
 import { createOrderServer } from "../actions/create-order";
 
