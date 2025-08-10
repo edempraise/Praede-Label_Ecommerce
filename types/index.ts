@@ -10,6 +10,11 @@ export interface Product {
   images: string[];
   in_stock: boolean;
   featured: boolean;
+  is_visible: boolean;
+  average_rating: number;
+  quantity: number;
+  discount?: number;
+  delivery_options: string[];
   created_at: string;
   updated_at: string;
 }
@@ -37,10 +42,12 @@ export interface Order {
   state: string;
   items: CartItem[];
   total_amount: number;
-  status: 'pending' | 'payment_review' | 'paid' | 'preparing' | 'shipped' | 'delivered';
+  status: 'pending' | 'payment_review' | 'paid' | 'preparing' | 'ready_for_delivery' | 'shipped' | 'delivered' | 'cancelled';
   payment_receipt?: string;
+  cancellation_reason?: string;
   created_at: string;
   updated_at: string;
+  user?: User;
 }
 
 export interface Category {
@@ -54,5 +61,21 @@ export interface User {
   id: string;
   email: string;
   is_admin: boolean;
+  is_verified: boolean;
+  status: 'active' | 'inactive';
   created_at: string;
+}
+
+export interface Review {
+  id: string;
+  product_id: string;
+  user_id: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+  user: {
+    id: string;
+    email: string;
+    full_name: string;
+  };
 }

@@ -1,25 +1,46 @@
-import * as React from 'react';
+import { FC, InputHTMLAttributes } from 'react';
+import { LucideIcon } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  id: string;
+  name: string;
+  label: string;
+  Icon: LucideIcon;
+  error?: string;
+  containerClassName?: string;
+}
 
-export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {}
+const Input: FC<InputProps> = ({
+  id,
+  name,
+  label,
+  Icon,
+  error,
+  containerClassName = '',
+  ...props
+}) => {
+  return (
+    <div className={containerClassName}>
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700">
+        {label}
+      </label>
+      <div className="mt-1 relative">
+        <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <input
+          id={id}
+          name={name}
+          {...props}
+          className={`block w-full pl-10 pr-3 py-2 border ${
+            error ? 'border-red-300' : 'border-gray-300'
+          } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+        />
+        {props.type === 'password' && props.children}
+      </div>
+      {error && (
+        <p className="mt-1 text-sm text-red-600">{error}</p>
+      )}
+    </div>
+  );
+};
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, ...props }, ref) => {
-    return (
-      <input
-        type={type}
-        className={cn(
-          'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-          className
-        )}
-        ref={ref}
-        {...props}
-      />
-    );
-  }
-);
-Input.displayName = 'Input';
-
-export { Input };
+export default Input;

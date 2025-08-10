@@ -154,14 +154,11 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: "ecommerce-store",
-      partialize: (state) => {
-        const userId = state.currentUserId;
-        if (!userId) return { cart: {}, wishlist: {} }; // nothing if no user
-        return {
-          cart: { [userId]: state.cart[userId] || [] },
-          wishlist: { [userId]: state.wishlist[userId] || [] },
-        };
-      },
+      partialize: (state) => ({
+        cart: state.cart,
+        wishlist: state.wishlist,
+        currentUserId: state.currentUserId,
+      }),
     }
   )
 );

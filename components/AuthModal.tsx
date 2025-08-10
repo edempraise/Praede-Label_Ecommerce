@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Eye, EyeOff, Mail, Lock, User, ArrowRight } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import { useToast } from '@/hooks/use-toast';
+import { X, ArrowRight } from 'lucide-react';
+import { useAuthForm } from '@/hooks/useAuthForm';
+import LoginForm from './auth/LoginForm';
+import SignupForm from './auth/SignupForm';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -15,150 +15,22 @@ interface AuthModalProps {
 }
 
 const AuthModal = ({ isOpen, onClose, initialMode = 'login', redirectTo = '/' }: AuthModalProps) => {
-  const router = useRouter();
-  const { toast } = useToast();
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
+  const {
+    formData,
+    loading,
+    errors,
+    handleInputChange,
+    handleSubmit,
+    setFormData,
+    setErrors,
+  } = useAuthForm(mode, onClose, redirectTo);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     setMode(initialMode);
   }, [initialMode]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (mode === 'signup' && !formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    if (mode === 'signup') {
-      if (!formData.confirmPassword) {
-        newErrors.confirmPassword = 'Please confirm your password';
-      } else if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) return;
-
-    setLoading(true);
-    try {
-      if (mode === 'login') {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
-
-        if (error) {
-          toast({
-            title: 'Login Failed',
-            description: error.message,
-            variant: 'destructive',
-          });
-          return;
-        }
-
-        if (data.user) {
-          toast({
-            title: 'Welcome back!',
-            description: 'You have been successfully logged in.',
-          });
-          onClose();
-          if (redirectTo !== '/') {
-            router.push(redirectTo);
-          }
-        }
-      } else {
-        const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            data: {
-              name: formData.name,
-            },
-          },
-        });
-
-        if (error) {
-          toast({
-            title: 'Signup Failed',
-            description: error.message,
-            variant: 'destructive',
-          });
-          return;
-        }
-
-        if (data.user) {
-          // Create user profile in users table
-          const { error: profileError } = await supabase
-            .from('users')
-            .insert({
-              id: data.user.id,
-              email: data.user.email!,
-              is_admin: false,
-            });
-
-          if (profileError) {
-            console.error('Error creating user profile:', profileError);
-          }
-
-          toast({
-            title: 'Account Created!',
-            description: 'Welcome to ElegantShop! You can now start shopping.',
-          });
-          onClose();
-          if (redirectTo !== '/') {
-            router.push(redirectTo);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Auth error:', error);
-      toast({
-        title: `${mode === 'login' ? 'Login' : 'Signup'} Failed`,
-        description: 'An unexpected error occurred. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const resetForm = () => {
     setFormData({
@@ -186,7 +58,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login', redirectTo = '/' }:
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+              className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
               onClick={onClose}
             />
 
@@ -198,7 +70,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login', redirectTo = '/' }:
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full sm:p-6"
+              className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full sm:p-6"
             >
               <div className="absolute top-0 right-0 pt-4 pr-4">
                 <button
@@ -233,114 +105,26 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login', redirectTo = '/' }:
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    {mode === 'signup' && (
-                      <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                          Full Name
-                        </label>
-                        <div className="mt-1 relative">
-                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                          <input
-                            id="name"
-                            name="name"
-                            type="text"
-                            value={formData.name}
-                            onChange={handleInputChange}
-                            className={`block w-full pl-10 pr-3 py-2 border ${
-                              errors.name ? 'border-red-300' : 'border-gray-300'
-                            } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                            placeholder="Enter your full name"
-                          />
-                        </div>
-                        {errors.name && (
-                          <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                        )}
-                      </div>
-                    )}
-
-                    <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                        Email address
-                      </label>
-                      <div className="mt-1 relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <input
-                          id="email"
-                          name="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={handleInputChange}
-                          className={`block w-full pl-10 pr-3 py-2 border ${
-                            errors.email ? 'border-red-300' : 'border-gray-300'
-                          } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                          placeholder="Enter your email"
-                        />
-                      </div>
-                      {errors.email && (
-                        <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                        Password
-                      </label>
-                      <div className="mt-1 relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <input
-                          id="password"
-                          name="password"
-                          type={showPassword ? 'text' : 'password'}
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          className={`block w-full pl-10 pr-10 py-2 border ${
-                            errors.password ? 'border-red-300' : 'border-gray-300'
-                          } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                          placeholder={mode === 'login' ? 'Enter your password' : 'Create a password'}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                        >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                      {errors.password && (
-                        <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-                      )}
-                    </div>
-
-                    {mode === 'signup' && (
-                      <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                          Confirm Password
-                        </label>
-                        <div className="mt-1 relative">
-                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                          <input
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            type={showConfirmPassword ? 'text' : 'password'}
-                            value={formData.confirmPassword}
-                            onChange={handleInputChange}
-                            className={`block w-full pl-10 pr-10 py-2 border ${
-                              errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                            } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                            placeholder="Confirm your password"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                          >
-                            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          </button>
-                        </div>
-                        {errors.confirmPassword && (
-                          <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
-                        )}
-                      </div>
+                    {mode === 'login' ? (
+                      <LoginForm
+                        formData={formData}
+                        handleInputChange={handleInputChange}
+                        errors={errors}
+                        loading={loading}
+                        showPassword={showPassword}
+                        setShowPassword={setShowPassword}
+                      />
+                    ) : (
+                      <SignupForm
+                        formData={formData}
+                        handleInputChange={handleInputChange}
+                        errors={errors}
+                        loading={loading}
+                        showPassword={showPassword}
+                        setShowPassword={setShowPassword}
+                        showConfirmPassword={showConfirmPassword}
+                        setShowConfirmPassword={setShowConfirmPassword}
+                      />
                     )}
 
                     <div className="mt-6">

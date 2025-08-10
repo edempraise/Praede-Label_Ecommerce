@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase, getAdminCount } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 
 const SignupPage = () => {
@@ -17,6 +17,7 @@ const SignupPage = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    is_admin: false,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -26,8 +27,11 @@ const SignupPage = () => {
   const redirectTo = searchParams.get('redirect') || '/';
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -69,12 +73,25 @@ const SignupPage = () => {
 
     setLoading(true);
     try {
+      if (formData.is_admin) {
+        const adminCount = await getAdminCount();
+        if (adminCount >= 2) {
+          toast({
+            title: 'Signup Failed',
+            description: 'The maximum number of admins has been reached.',
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
             name: formData.name,
+            is_admin: formData.is_admin,
           },
         },
       });
@@ -95,7 +112,7 @@ const SignupPage = () => {
           .insert({
             id: data.user.id,
             email: data.user.email!,
-            is_admin: false,
+            is_admin: formData.is_admin,
           });
 
         if (profileError) {
@@ -257,6 +274,19 @@ const SignupPage = () => {
               {errors.confirmPassword && (
                 <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
               )}
+            </div>
+            <div className="flex items-center">
+              <input
+                id="is_admin"
+                name="is_admin"
+                type="checkbox"
+                checked={formData.is_admin}
+                onChange={handleInputChange}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="is_admin" className="ml-2 block text-sm text-gray-900">
+                Sign up as an admin
+              </label>
             </div>
           </div>
 

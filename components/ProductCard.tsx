@@ -7,13 +7,14 @@ import { motion } from "framer-motion";
 import { Product } from "@/types";
 import { useStore } from "@/store/useStore";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const {
+    const {
     addToCart,
     addToWishlist,
     removeFromWishlist,
@@ -85,6 +86,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
+
+
   return (
     <motion.div
       whileHover={{ y: -5 }}
@@ -111,21 +114,20 @@ const ProductCard = ({ product }: ProductCardProps) => {
               %
             </div>
           )}
-
-          <div className="absolute top-2 right-2 flex flex-col space-y-2">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handleWishlist}
-              className={`p-2 rounded-full ${
-                isProductInWishlist
-                  ? "bg-red-500 text-white"
-                  : "bg-white text-gray-600"
-              } hover:bg-red-500 hover:text-white transition-colors shadow-md`}
-            >
-              <Heart className="w-4 h-4" />
-            </motion.button>
-          </div>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={handleWishlist}
+            className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors"
+          >
+            <Heart
+              className={`w-5 h-5 ${
+                wishlist
+                  ? "text-red-500 fill-current"
+                  : "text-gray-500"
+              }`}
+            />
+          </motion.button>
         </div>
       </Link>
 
@@ -139,10 +141,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <div className="flex items-center mb-2">
           <div className="flex items-center">
             {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-4 h-4 text-yellow-400 fill-current" />
+              <Star
+                key={i}
+                className={`w-4 h-4 ${i < Math.round(product.average_rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+              />
             ))}
           </div>
-          <span className="text-sm text-gray-600 ml-2">(4.5)</span>
+          <span className="text-sm text-gray-600 ml-2">({product.average_rating?.toFixed(1) || 0.0})</span>
         </div>
 
         <div className="flex items-center justify-between">
@@ -158,15 +163,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
               )}
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleAddToCart}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-1"
-          >
-            <ShoppingCart className="w-4 h-4" />
-            <span>Add</span>
-          </motion.button>
+          <Link href={`/products/${product.id}`}>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-1"
+            >
+              <span>View Details</span>
+            </motion.button>
+          </Link>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-1">
