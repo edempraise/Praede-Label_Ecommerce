@@ -23,11 +23,11 @@ const AddProductModal = ({
 
   const uploadImages = async (images: (File | string)[]): Promise<string[]> => {
     const uploadPromises = images.map(async (image) => {
-      if (typeof image === 'string') {
+      if (typeof image === "string") {
         return image;
       }
       const fileName = `${Date.now()}-${image.name}`;
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from("products")
         .upload(fileName, image, { upsert: true });
 
@@ -99,15 +99,18 @@ const AddProductModal = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
+        <>
+          {/* Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity z-40 pointer-events-auto"
+            className="fixed inset-0 bg-gray-500 bg-opacity-75 backdrop-blur-sm transition-opacity z-40"
             onClick={onClose}
           />
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+
+          {/* Modal */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4 pt-4 pb-20 sm:pb-0">
             <span
               className="hidden sm:inline-block sm:align-middle sm:h-screen"
               aria-hidden="true"
@@ -119,7 +122,7 @@ const AddProductModal = ({
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="z-50 relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6"
+              className="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6"
             >
               <div className="absolute top-0 right-0 pt-4 pr-4">
                 <button
@@ -132,7 +135,7 @@ const AddProductModal = ({
                 </button>
               </div>
 
-              <div className="sm:flex sm:items-start relative z-50">
+              <div className="sm:flex sm:items-start">
                 <div className="w-full">
                   <div className="text-center mb-6">
                     <h3 className="text-lg leading-6 font-medium text-gray-900">
@@ -147,7 +150,7 @@ const AddProductModal = ({
               </div>
             </motion.div>
           </div>
-        </div>
+        </>
       )}
     </AnimatePresence>
   );

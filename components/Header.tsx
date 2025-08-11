@@ -36,7 +36,7 @@ const Header = () => {
     if (!loading && !user && mounted) {
       const timer = setTimeout(() => {
         setShowLoginPrompt(true);
-      }, 60000); // 1 minute
+      }, 10000); // 1 minute
 
       return () => clearTimeout(timer);
     }
