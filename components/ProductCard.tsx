@@ -122,10 +122,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
           >
             <Heart
               className={`w-5 h-5 ${
-                wishlist
-                  ? "text-red-500 fill-current"
-                  : "text-gray-500"
+                isProductInWishlist ? "text-red-500" : "text-gray-500"
               }`}
+              fill={isProductInWishlist ? "currentColor" : "none"}
             />
           </motion.button>
         </div>
