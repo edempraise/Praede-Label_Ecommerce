@@ -1,4 +1,4 @@
-import { FC, InputHTMLAttributes } from 'react';
+import { FC, InputHTMLAttributes, ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -8,6 +8,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   Icon: LucideIcon;
   error?: string;
   containerClassName?: string;
+  children?: ReactNode;
 }
 
 const Input: FC<InputProps> = ({
@@ -17,6 +18,7 @@ const Input: FC<InputProps> = ({
   Icon,
   error,
   containerClassName = '',
+  children,
   ...props
 }) => {
   return (
@@ -34,11 +36,9 @@ const Input: FC<InputProps> = ({
             error ? 'border-red-300' : 'border-gray-300'
           } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
         />
-        {props.type === 'password' && props.children}
+        {children}
       </div>
-      {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
-      )}
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
 };
