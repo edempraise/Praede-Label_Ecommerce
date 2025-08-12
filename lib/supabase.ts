@@ -120,16 +120,12 @@ export const deleteProduct = async (productId: string): Promise<void> => {
 export const uploadLogo = async (file: File): Promise<string> => {
   const fileName = `logo-${Date.now()}.${file.name.split(".").pop()}`;
 
-  let { error } = await supabase.storage
+  const { error } = await supabase.storage
     .from("logos")
-    .update(fileName, file, { contentType: file.type });
-
-  if (error && error.message.includes("not found")) {
-    const res = await supabase.storage
-      .from("logos")
-      .upload(fileName, file, { contentType: file.type });
-    error = res.error;
-  }
+    .upload(fileName, file, {
+      contentType: file.type,
+      upsert: true, // ✅ allows overwriting
+    });
 
   if (error) throw error;
 
@@ -167,9 +163,8 @@ export const getSettings = async (): Promise<any> => {
 export const updateSetting = async (key: string, value: any): Promise<any> => {
   const { data, error } = await supabase
     .from("settings")
-    .update({ value })
-    .eq("key", key)
-    .select()
+    .upsert({ key, value }, { onConflict: "key" }) // upsert instead of update
+    .select("*")
     .single();
 
   if (error) throw error;

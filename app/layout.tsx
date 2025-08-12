@@ -5,21 +5,35 @@ import Header from '@/components/Header';
 import ConditionalWhatsAppButton from '@/components/ConditionalWhatsAppButton';
 import { Toaster } from '@/components/ui/toaster';
 import SettingsProvider from '@/components/SettingsProvider';
+import { getSettings } from '@/lib/supabase';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'ElegantShop - Premium Fashion & Lifestyle',
-  description: 'Discover premium fashion and lifestyle products with seamless shopping experience',
-  keywords: 'fashion, lifestyle, premium, shopping, ecommerce, Nigeria',
-  authors: [{ name: 'ElegantShop' }],
-  openGraph: {
-    title: 'ElegantShop - Premium Fashion & Lifestyle',
-    description: 'Discover premium fashion and lifestyle products with seamless shopping experience',
-    type: 'website',
-    locale: 'en_US',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  const siteName = settings.site_name || 'ElegantShop';
+  const siteDescription =
+    settings.site_description ||
+    'Discover premium fashion and lifestyle products with seamless shopping experience';
+  const siteLogo = settings.site_logo;
+
+  return {
+    title: `${siteName} - Premium Fashion & Lifestyle`,
+    description: siteDescription,
+    keywords: 'fashion, lifestyle, premium, shopping, ecommerce, Nigeria',
+    authors: [{ name: siteName }],
+    icons: {
+      icon: siteLogo || '/favicon.ico',
+    },
+    openGraph: {
+      title: `${siteName} - Premium Fashion & Lifestyle`,
+      description: siteDescription,
+      type: 'website',
+      locale: 'en_US',
+      images: siteLogo ? [siteLogo] : [],
+    },
+  };
+}
 
 export default function RootLayout({
   children,
