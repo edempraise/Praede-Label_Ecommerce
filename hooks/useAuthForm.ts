@@ -122,7 +122,7 @@ export const useAuthForm = (mode: 'login' | 'signup', onClose: () => void, redir
 
           toast({
             title: 'Account Created!',
-            description: 'Welcome to ElegantShop! You can now start shopping.',
+            description: 'Welcome to Praéde! You can now start shopping.',
           });
           onClose();
           if (redirectTo !== '/') {

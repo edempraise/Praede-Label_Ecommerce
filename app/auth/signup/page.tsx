@@ -121,7 +121,7 @@ const SignupPage = () => {
 
         toast({
           title: 'Account Created!',
-          description: 'Welcome to ElegantShop! You can now start shopping.',
+          description: 'Welcome to Praéde! You can now start shopping.',
         });
         
         // Redirect to the intended page or home

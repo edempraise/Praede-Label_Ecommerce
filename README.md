@@ -1,7 +1,7 @@
-# 🛍️ ElegantShop - Premium E-commerce Platform
+# 🛍️ Praéde - Premium E-commerce Platform
 
 <div align="center">
-  <img src="https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=800" alt="ElegantShop Banner" width="800" height="300" style="object-fit: cover; border-radius: 10px;">
+  <img src="https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Praéde Banner" width="800" height="300" style="object-fit: cover; border-radius: 10px;">
   
   [![Next.js](https://img.shields.io/badge/Next.js-13.5.1-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
@@ -12,7 +12,7 @@
 
 ## ✨ Overview
 
-**ElegantShop** is a modern, full-featured e-commerce platform designed for premium fashion and lifestyle brands. Built with cutting-edge technologies, it offers a seamless shopping experience with beautiful animations, robust admin capabilities, and secure payment processing.
+**Praéde** is a modern, full-featured e-commerce platform designed for premium fashion and lifestyle brands. Built with cutting-edge technologies, it offers a seamless shopping experience with beautiful animations, robust admin capabilities, and secure payment processing.
 
 ### 🎯 Perfect For
 - Fashion & lifestyle brands
@@ -80,8 +80,8 @@
 
 ### 1. Clone & Install
 ```bash
-git clone https://github.com/yourusername/elegantshop.git
-cd elegantshop
+git clone https://github.com/yourusername/praede.git
+cd praede
 npm install
 ```
 
@@ -109,7 +109,7 @@ Visit `http://localhost:3000` to see your store! 🎉
 ## 📁 Project Structure
 
 ```
-elegantshop/
+praede/
 ├── app/                    # Next.js App Router pages
 │   ├── admin/             # Admin dashboard
 │   ├── cart/              # Shopping cart
@@ -223,7 +223,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Documentation**: Check `SITE_DOCUMENTATION.md` for detailed guides
 - **Issues**: Report bugs via GitHub Issues
 - **Discussions**: Join our GitHub Discussions
-- **Email**: support@elegantshop.com
+- **Email**: support@praede.com
 
 ## 🎯 Roadmap
 
@@ -254,8 +254,8 @@ If this project helped you, please give it a ⭐ on GitHub!
 <div align="center">
   <p>Built with ❤️ by developers, for developers</p>
   <p>
-    <a href="https://github.com/yourusername/elegantshop">GitHub</a> •
-    <a href="https://elegantshop-demo.vercel.app">Live Demo</a> •
-    <a href="mailto:support@elegantshop.com">Contact</a>
+    <a href="https://github.com/yourusername/praede">GitHub</a> •
+    <a href="https://praede-demo.vercel.app">Live Demo</a> •
+    <a href="mailto:support@praede.com">Contact</a>
   </p>
 </div>

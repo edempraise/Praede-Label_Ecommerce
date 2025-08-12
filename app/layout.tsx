@@ -13,7 +13,7 @@ export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
-  const siteName = settings.site_name || 'ElegantShop';
+  const siteName = settings.site_name || 'Praéde';
   const siteDescription =
     settings.site_description ||
     'Discover premium fashion and lifestyle products with seamless shopping experience';

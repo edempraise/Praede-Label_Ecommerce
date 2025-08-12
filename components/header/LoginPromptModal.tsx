@@ -49,7 +49,7 @@ const LoginPromptModal: FC<LoginPromptModalProps> = ({
                 </div>
                 <div className="mt-3 text-center sm:mt-5">
                   <h3 className="text-lg leading-6 font-medium text-gray-900">
-                    Join ElegantShop
+                    Join Praéde
                   </h3>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">

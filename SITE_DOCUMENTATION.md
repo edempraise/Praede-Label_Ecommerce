@@ -1,7 +1,7 @@
-# ElegantShop - Site Documentation
+# Praéde - Site Documentation
 
 ## Overview
-ElegantShop is a premium e-commerce platform built with Next.js, featuring a modern design and seamless shopping experience for fashion and lifestyle products.
+Praéde is a premium e-commerce platform built with Next.js, featuring a modern design and seamless shopping experience for fashion and lifestyle products.
 
 ## Site Functions & Features
 

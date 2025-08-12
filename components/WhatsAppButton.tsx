@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 const WhatsAppButton = () => {
   const handleWhatsAppClick = () => {
-    const message = encodeURIComponent('Hello! I need help with my order on ElegantShop.');
+    const message = encodeURIComponent('Hello! I need help with my order on Praéde.');
     window.open(`https://wa.me/2348120812383?text=${message}`, '_blank');
   };
 

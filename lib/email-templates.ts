@@ -5,7 +5,7 @@ const adminEmail = "admin@example.com"; // Replace with the actual admin email
 export const getNewOrderEmailForCustomer = (order: Order) => {
   return {
     to: order.customer_email,
-    from: "ElegantShop <noreply@example.com>",
+    from: "Praéde <noreply@example.com>",
     subject: `Your Order #${order.id} has been confirmed!`,
     html: `
       <h1>Thank you for your order!</h1>
@@ -21,11 +21,11 @@ export const getNewOrderEmailForCustomer = (order: Order) => {
 export const getNewOrderEmailForAdmin = (order: Order) => {
   return {
     to: adminEmail,
-    from: "ElegantShop <noreply@example.com>",
+    from: "Praéde <noreply@example.com>",
     subject: `New Order #${order.id}`,
     html: `
       <h1>New Order Received</h1>
-      <p>A new order has been placed on ElegantShop.</p>
+      <p>A new order has been placed on Praéde.</p>
       <p><strong>Order ID:</strong> ${order.id}</p>
       <p><strong>Customer:</strong> ${order.customer_name} (${order.customer_email})</p>
       <p><strong>Total Amount:</strong> ₦${order.total_amount.toLocaleString()}</p>
@@ -38,7 +38,7 @@ export const getOrderStatusUpdateEmailForCustomer = (order: Order) => {
   const statusText = order.status.replace("_", " ");
   return {
     to: order.customer_email,
-    from: "ElegantShop <noreply@example.com>",
+    from: "Praéde <noreply@example.com>",
     subject: `Your Order #${order.id} has been updated to: ${statusText}`,
     html: `
       <h1>Order Status Update</h1>
@@ -53,7 +53,7 @@ export const getOrderStatusUpdateEmailForCustomer = (order: Order) => {
 export const getOrderShippedEmailForAdmin = (order: Order) => {
     return {
       to: adminEmail,
-      from: "ElegantShop <noreply@example.com>",
+      from: "Praéde <noreply@example.com>",
       subject: `Order #${order.id} has been shipped`,
       html: `
         <h1>Order Shipped</h1>
@@ -66,7 +66,7 @@ export const getOrderShippedEmailForAdmin = (order: Order) => {
   export const getOrderDeliveredEmailForAdmin = (order: Order) => {
     return {
       to: adminEmail,
-      from: "ElegantShop <noreply@example.com>",
+      from: "Praéde <noreply@example.com>",
       subject: `Order #${order.id} has been delivered`,
       html: `
         <h1>Order Delivered</h1>
