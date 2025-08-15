@@ -26,17 +26,6 @@ const SignupForm: FC<SignupFormProps> = ({
   return (
     <>
       <Input
-        id="name"
-        name="name"
-        type="text"
-        label="Full Name"
-        Icon={User}
-        value={formData.name}
-        onChange={handleInputChange}
-        error={errors.name}
-        placeholder="Enter your full name"
-      />
-      <Input
         id="email"
         name="email"
         type="email"
