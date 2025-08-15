@@ -13,7 +13,6 @@ const SignupPage = () => {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -39,10 +38,6 @@ const SignupPage = () => {
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
 
     if (!formData.email) {
       newErrors.email = 'Email is required';
@@ -90,7 +85,6 @@ const SignupPage = () => {
         password: formData.password,
         options: {
           data: {
-            name: formData.name,
             is_admin: formData.is_admin,
           },
         },
@@ -166,30 +160,6 @@ const SignupPage = () => {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full Name
-              </label>
-              <div className="mt-1 relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className={`appearance-none relative block w-full pl-10 pr-3 py-3 border ${
-                    errors.name ? 'border-red-300' : 'border-gray-300'
-                  } placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                  placeholder="Enter your full name"
-                />
-              </div>
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-              )}
-            </div>
-
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address

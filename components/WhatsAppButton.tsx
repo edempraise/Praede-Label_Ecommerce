@@ -3,10 +3,10 @@
 import { MessageCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const WhatsAppButton = () => {
+const WhatsAppButton = ({ phoneNumber }: { phoneNumber: string }) => {
   const handleWhatsAppClick = () => {
     const message = encodeURIComponent('Hello! I need help with my order on Praéde.');
-    window.open(`https://wa.me/2348120812383?text=${message}`, '_blank');
+    window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
   };
 
   return (
