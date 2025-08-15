@@ -1,21 +1,26 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowRight } from 'lucide-react';
-import { useAuthForm } from '@/hooks/useAuthForm';
-import LoginForm from './auth/LoginForm';
-import SignupForm from './auth/SignupForm';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ArrowRight } from "lucide-react";
+import { useAuthForm } from "@/hooks/useAuthForm";
+import LoginForm from "./auth/LoginForm";
+import SignupForm from "./auth/SignupForm";
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialMode?: 'login' | 'signup';
+  initialMode?: "login" | "signup";
   redirectTo?: string;
 }
 
-const AuthModal = ({ isOpen, onClose, initialMode = 'login', redirectTo = '/' }: AuthModalProps) => {
-  const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
+const AuthModal = ({
+  isOpen,
+  onClose,
+  initialMode = "login",
+  redirectTo = "/",
+}: AuthModalProps) => {
+  const [mode, setMode] = useState<"login" | "signup">(initialMode);
   const {
     formData,
     loading,
@@ -34,10 +39,10 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login', redirectTo = '/' }:
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
     });
     setErrors({});
     setShowPassword(false);
@@ -45,7 +50,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login', redirectTo = '/' }:
   };
 
   const switchMode = () => {
-    setMode(mode === 'login' ? 'signup' : 'login');
+    setMode(mode === "login" ? "signup" : "login");
     resetForm();
   };
 
@@ -53,24 +58,22 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login', redirectTo = '/' }:
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity z-40"
-              onClick={onClose}
-            />
+          {/* Blur overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity z-40"
+            onClick={onClose}
+          />
 
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
-              &#8203;
-            </span>
-
+          {/* Login Modal */}
+          {mode === "login" && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="z-50 inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full sm:p-6"
+              className="fixed z-50 top-1/2 left-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-xl p-6"
             >
               <div className="absolute top-0 right-0 pt-4 pr-4">
                 <button
@@ -90,22 +93,26 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login', redirectTo = '/' }:
                       <span className="text-white font-bold text-xl">E</span>
                     </div>
                     <h3 className="text-lg leading-6 font-medium text-gray-900">
-                      {mode === 'login' ? 'Sign in to your account' : 'Create your account'}
+                      {mode === "login"
+                        ? "Sign in to your account"
+                        : "Create your account"}
                     </h3>
                     <p className="mt-2 text-sm text-gray-600">
-                      {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+                      {mode === "login"
+                        ? "Don't have an account? "
+                        : "Already have an account? "}
                       <button
                         type="button"
                         onClick={switchMode}
                         className="font-medium text-blue-600 hover:text-blue-500"
                       >
-                        {mode === 'login' ? 'Sign up' : 'Sign in'}
+                        {mode === "login" ? "Sign up" : "Sign in"}
                       </button>
                     </p>
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    {mode === 'login' ? (
+                    {mode === "login" ? (
                       <LoginForm
                         formData={formData}
                         handleInputChange={handleInputChange}
@@ -137,7 +144,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login', redirectTo = '/' }:
                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         ) : (
                           <>
-                            {mode === 'login' ? 'Sign in' : 'Create Account'}
+                            {mode === "login" ? "Sign in" : "Create Account"}
                             <ArrowRight className="ml-2 w-4 h-4" />
                           </>
                         )}
@@ -147,7 +154,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login', redirectTo = '/' }:
                 </div>
               </div>
             </motion.div>
-          </div>
+          )}
         </div>
       )}
     </AnimatePresence>

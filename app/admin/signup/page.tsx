@@ -30,13 +30,18 @@ const AdminSignUpPage = () => {
         description: error.message,
         variant: 'destructive',
       });
-    } else if (data.user) {
-      await supabase.from('users').update({ is_admin: true }).eq('id', data.user.id);
-      toast({
-        title: 'Success!',
-        description: 'Admin account created. Please check your email for verification.',
-      });
-    }
+   } else if (data.user) {
+  await supabase.from('users').insert({
+    id: data.user.id,
+    email: data.user.email,
+    is_admin: true
+  });
+  toast({
+    title: 'Success!',
+    description: 'Admin account created. Please check your email for verification.',
+  });
+}
+
     setLoading(false);
   };
 
