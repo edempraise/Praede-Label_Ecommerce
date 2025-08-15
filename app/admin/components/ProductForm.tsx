@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { X, Plus, Minus, Upload, Trash2 } from 'lucide-react';
-import { Product } from '@/types';
+import { Product, Category } from '@/types';
+import { supabase } from '@/lib/supabase';
 
 export interface ProductFormData {
   name: string;
@@ -19,41 +20,55 @@ export interface ProductFormData {
 }
 
 interface ProductFormProps {
-  initialData?: Product | null;
-  onSubmit: (data: ProductFormData) => void;
+  product: ProductFormData;
+  onChange: (data: ProductFormData) => void;
+  onRemove: () => void;
   isSaving: boolean;
 }
 
-const ProductForm = ({ initialData, onSubmit, isSaving }: ProductFormProps) => {
-  const [formData, setFormData] = useState<ProductFormData>({
-    name: '',
-    description: '',
-    price: 0,
-    original_price: 0,
-    category: 'Clothing',
-    quantity: 0,
-    size: [''],
-    color: [''],
-    images: [],
-    delivery_options: [],
-  });
+const ProductForm = ({
+  product,
+  onChange,
+  onRemove,
+  isSaving,
+}: ProductFormProps) => {
+  const [formData, setFormData] = useState<ProductFormData>(product);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
 
   useEffect(() => {
-    if (initialData) {
-      setFormData({
-        name: initialData.name || '',
-        description: initialData.description || '',
-        price: initialData.price || 0,
-        original_price: initialData.original_price || 0,
-        category: initialData.category || 'Clothing',
-        quantity: initialData.quantity || 0,
-        size: initialData.size || [''],
-        color: initialData.color || [''],
-        images: initialData.images || [],
-        delivery_options: initialData.delivery_options || [],
-      });
+    const fetchCategories = async () => {
+      const { data, error } = await supabase.from('categories').select('*');
+      if (error) {
+        console.error('Error fetching categories:', error);
+      } else {
+        setCategories(data);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    onChange(formData);
+  }, [formData]);
+
+  const handleAddNewCategory = async () => {
+    if (newCategory.trim() === '') return;
+    const { data, error } = await supabase
+      .from('categories')
+      .insert({ name: newCategory })
+      .select()
+      .single();
+    if (error) {
+      console.error('Error adding category:', error);
+    } else {
+      setCategories([...categories, data]);
+      setFormData((prev) => ({ ...prev, category: data.name }));
+      setShowNewCategoryInput(false);
+      setNewCategory('');
     }
-  }, [initialData]);
+  };
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
@@ -110,19 +125,22 @@ const ProductForm = ({ initialData, onSubmit, isSaving }: ProductFormProps) => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <div className="border border-gray-200 rounded-lg p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Basic Information */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Product Name *</label>
+    <div className="border border-gray-200 rounded-lg p-6 relative">
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-2 right-2 text-red-600 hover:text-red-800"
+      >
+        <Trash2 className="w-5 h-5" />
+      </button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Basic Information */}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Product Name *
+            </label>
               <input
                 type="text"
                 name="name"
@@ -150,14 +168,41 @@ const ProductForm = ({ initialData, onSubmit, isSaving }: ProductFormProps) => {
               <select
                 name="category"
                 value={formData.category}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  if (e.target.value === 'add_new') {
+                    setShowNewCategoryInput(true);
+                  } else {
+                    handleInputChange(e);
+                    setShowNewCategoryInput(false);
+                  }
+                }}
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="Clothing">Clothing</option>
-                <option value="Accessories">Accessories</option>
-                <option value="Footwear">Footwear</option>
-                <option value="Electronics">Electronics</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.name}>
+                    {cat.name}
+                  </option>
+                ))}
+                <option value="add_new">+ Add new category</option>
               </select>
+              {showNewCategoryInput && (
+                <div className="mt-2 flex">
+                  <input
+                    type="text"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="New category name"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddNewCategory}
+                    className="px-3 py-2 border border-l-0 border-gray-300 bg-gray-50 rounded-r-md text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  >
+                    Add
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -301,16 +346,7 @@ const ProductForm = ({ initialData, onSubmit, isSaving }: ProductFormProps) => {
           </div>
         </div>
       </div>
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={isSaving}
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSaving ? 'Saving...' : 'Save Product'}
-        </button>
-      </div>
-    </form>
+    </div>
   );
 };
 

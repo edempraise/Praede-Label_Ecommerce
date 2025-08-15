@@ -33,6 +33,18 @@ export const updateProduct = async (
     .maybeSingle();
 
   if (error) throw error;
+
+  if (status === "shipped" || status === "delivered") {
+    try {
+      await sendOrderStatusUpdateEmail(data, status);
+    } catch (emailError) {
+      console.error(
+        `Failed to send order status update email for order ${orderId}:`,
+        emailError
+      );
+    }
+  }
+
   return data;
 };
 
@@ -270,7 +282,10 @@ export const getCategories = async (): Promise<Category[]> => {
   return data || [];
 };
 
-import { sendOrderConfirmationEmails } from "@/app/actions/send-order-emails";
+import {
+  sendOrderConfirmationEmails,
+  sendOrderStatusUpdateEmail,
+} from "@/app/actions/send-order-emails";
 
 export const createOrder = async (
   orderData: Omit<Order, "id" | "created_at" | "updated_at">
