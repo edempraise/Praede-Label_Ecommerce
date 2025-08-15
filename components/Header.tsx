@@ -6,20 +6,15 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Search, ShoppingCart, Heart, Menu, X, User, ArrowLeft, Package, Settings } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { useAuth } from '@/hooks/useAuth';
-import AuthModal from '@/components/AuthModal';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import MobileMenu from './header/MobileMenu';
 import UserDropdown from './header/UserDropdown';
-import LoginPromptModal from './header/LoginPromptModal';
 
 const Header = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login');
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const { cart, wishlist, currentUserId, getCartCount } = useStore();
   const { user, loading, signOut } = useAuth();
   const { settings } = useSettingsStore();
@@ -31,29 +26,17 @@ const Header = () => {
     setMounted(true);
   }, []);
 
-  // Show login prompt after 1 minute for non-authenticated users
-  useEffect(() => {
-    if (!loading && !user && mounted) {
-      const timer = setTimeout(() => {
-        setShowLoginPrompt(true);
-      }, 10000); // 1 minute
-
-      return () => clearTimeout(timer);
-    }
-  }, [user, loading, mounted]);
-
   const handleAuthRequired = useCallback((action: string) => {
     if (!user) {
-      setAuthModalMode('login');
-      setShowAuthModal(true);
+      router.push('/auth/login');
       return false;
     }
     return true;
-  }, [user]);
+  }, [user, router]);
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/');
+    router.push('/auth/login');
   };
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -175,15 +158,11 @@ const Header = () => {
                   <UserDropdown user={user} handleSignOut={handleSignOut} />
                 </div>
               ) : (
-                <button
-                  onClick={async () => {
-                    await signOut();
-                    router.push('/auth/login');
-                  }}
-                  className="p-2 text-gray-700 hover:text-blue-600 transition-colors"
-                >
-                  <User className="w-6 h-6" />
-                </button>
+                <Link href="/auth/login">
+                  <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                    Sign In
+                  </button>
+                </Link>
               )}
 
               <button
@@ -210,27 +189,6 @@ const Header = () => {
           </div>
         </div>
       </header>
-
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        initialMode={authModalMode}
-      />
-
-      <LoginPromptModal
-        isOpen={showLoginPrompt}
-        onClose={() => setShowLoginPrompt(false)}
-        onSignUp={() => {
-          setShowLoginPrompt(false);
-          setAuthModalMode('signup');
-          setShowAuthModal(true);
-        }}
-        onSignIn={() => {
-          setShowLoginPrompt(false);
-          setAuthModalMode('login');
-          setShowAuthModal(true);
-        }}
-      />
     </>
   );
 };

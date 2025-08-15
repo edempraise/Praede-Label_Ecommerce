@@ -1,18 +1,31 @@
 'use client';
 
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, getAdminCount } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 const AdminSignUpPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    const adminCount = await getAdminCount();
+    if (adminCount >= 3) {
+      toast({
+        title: 'Signup Failed',
+        description: 'The maximum number of admins has been reached.',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
 
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -30,17 +43,18 @@ const AdminSignUpPage = () => {
         description: error.message,
         variant: 'destructive',
       });
-   } else if (data.user) {
-  await supabase.from('users').insert({
-    id: data.user.id,
-    email: data.user.email,
-    is_admin: true
-  });
-  toast({
-    title: 'Success!',
-    description: 'Admin account created. Please check your email for verification.',
-  });
-}
+    } else if (data.user) {
+      await supabase.from('users').insert({
+        id: data.user.id,
+        email: data.user.email,
+        is_admin: true
+      });
+      toast({
+        title: 'Success!',
+        description: 'Admin account created. Please log in to continue.',
+      });
+      router.push('/auth/login');
+    }
 
     setLoading(false);
   };
