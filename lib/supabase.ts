@@ -197,7 +197,7 @@ export const getAdminCount = async (): Promise<number> => {
   const { error, count } = await supabase
     .from("users")
     .select("*", { count: "exact", head: true })
-    .eq("user_metadata->>is_admin", "true");
+    .eq("is_admin", true);
 
   if (error) {
     throw new Error(`Failed to get admin count: ${error.message}`);
@@ -205,6 +205,7 @@ export const getAdminCount = async (): Promise<number> => {
 
   return count || 0;
 };
+
 
 export const getUsers = async (): Promise<any[]> => {
   const { data, error } = await supabase
