@@ -34,17 +34,6 @@ export const updateProduct = async (
 
   if (error) throw error;
 
-  if (status === "shipped" || status === "delivered") {
-    try {
-      await sendOrderStatusUpdateEmail(data, status);
-    } catch (emailError) {
-      console.error(
-        `Failed to send order status update email for order ${orderId}:`,
-        emailError
-      );
-    }
-  }
-
   return data;
 };
 
@@ -367,6 +356,18 @@ export const updateOrderStatus = async (
     .maybeSingle();
 
   if (error) throw error;
+
+  if (data && (status === "shipped" || status === "delivered")) {
+    try {
+      await sendOrderStatusUpdateEmail(data, status);
+    } catch (emailError) {
+      console.error(
+        `Failed to send order status update email for order ${orderId}:`,
+        emailError
+      );
+    }
+  }
+
   return data;
 };
 

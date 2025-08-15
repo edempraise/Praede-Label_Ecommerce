@@ -117,6 +117,29 @@ const SettingsPage = () => {
             </div>
 
             <div>
+              <label htmlFor="whatsappNumber" className="block text-sm font-medium text-gray-700">
+                WhatsApp Number
+              </label>
+              <div className="mt-1 flex rounded-md shadow-sm">
+                <input
+                  type="text"
+                  name="whatsappNumber"
+                  id="whatsappNumber"
+                  value={settings.whatsappNumber || ''}
+                  onChange={(e) => handleSettingChange('whatsappNumber', e.target.value)}
+                  className="flex-1 block w-full rounded-none rounded-l-md sm:text-sm border-gray-300"
+                  disabled={!editMode.whatsappNumber}
+                />
+                <button
+                  onClick={() => setEditMode({ ...editMode, whatsappNumber: !editMode.whatsappNumber })}
+                  className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 text-sm"
+                >
+                  {editMode.whatsappNumber ? <Save className="w-5 h-5" /> : <Edit className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-gray-700">Logo</label>
               <div className="mt-2 space-y-4">
                 <div className="flex items-center">

@@ -34,6 +34,36 @@ export const getNewOrderEmailForAdmin = (order: Order) => {
   };
 };
 
+export const getOrderShippedEmailForCustomer = (order: Order) => {
+  return {
+    to: order.customer_email,
+    from: "Praéde <noreply@example.com>",
+    subject: `Your Order #${order.id} has been shipped!`,
+    html: `
+      <h1>Your order is on its way!</h1>
+      <p>Hi ${order.customer_name},</p>
+      <p>Great news! Your order #${order.id} has been shipped and is on its way to you.</p>
+      <p>You can view your order details here: <a href="https://your-store-url.com/orders/${order.id}">View Order</a></p>
+      <p>Thank you for shopping with us!</p>
+    `,
+  };
+};
+
+export const getOrderDeliveredEmailForCustomer = (order: Order) => {
+  return {
+    to: order.customer_email,
+    from: "Praéde <noreply@example.com>",
+    subject: `Your Order #${order.id} has been delivered!`,
+    html: `
+      <h1>Your order has arrived!</h1>
+      <p>Hi ${order.customer_name},</p>
+      <p>Your order #${order.id} has been delivered. We hope you enjoy your purchase!</p>
+      <p>You can view your order details here: <a href="https://your-store-url.com/orders/${order.id}">View Order</a></p>
+      <p>Thank you for shopping with us!</p>
+    `,
+  };
+};
+
 export const getOrderStatusUpdateEmailForCustomer = (order: Order) => {
   const statusText = order.status.replace("_", " ");
   return {
