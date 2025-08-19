@@ -107,49 +107,51 @@ const Header = () => {
 
             {/* Icons */}
             <div className="flex items-center space-x-4">
-              {!user?.user_metadata.is_admin && (
-                <>
-                  <button
-                    onClick={() => router.push('/products')}
-                    className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
-                  >
-                    <Package className="w-6 h-6" />
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (handleAuthRequired('wishlist')) {
-                        router.push('/wishlist');
-                      }
-                    }}
-                    className="relative p-2 text-gray-700 hover:text-red-600 transition-colors"
-                  >
-                    <Heart className="w-6 h-6" />
-                    {userWishlist.length > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {userWishlist.length}
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (handleAuthRequired('cart')) {
-                        router.push('/cart');
-                      }
-                    }}
-                    className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
-                  >
-                    <ShoppingCart className="w-6 h-6" />
-                    {cartCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {cartCount}
-                      </span>
-                    )}
-                  </button>
-                </>
-              )}
+              <div className="hidden md:flex items-center space-x-4">
+                {!user?.user_metadata.is_admin && (
+                  <>
+                    <button
+                      onClick={() => router.push('/products')}
+                      className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+                    >
+                      <Package className="w-6 h-6" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (handleAuthRequired('wishlist')) {
+                          router.push('/wishlist');
+                        }
+                      }}
+                      className="relative p-2 text-gray-700 hover:text-red-600 transition-colors"
+                    >
+                      <Heart className="w-6 h-6" />
+                      {userWishlist.length > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          {userWishlist.length}
+                        </span>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (handleAuthRequired('cart')) {
+                          router.push('/cart');
+                        }
+                      }}
+                      className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
+                    >
+                      <ShoppingCart className="w-6 h-6" />
+                      {cartCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                          {cartCount}
+                        </span>
+                      )}
+                    </button>
+                  </>
+                )}
+              </div>
 
               {user ? (
-                <div className="flex items-center space-x-2">
+                <div className="hidden md:flex items-center space-x-2">
                   {user.user_metadata.is_admin && (
                     <Link href="/admin/settings" className="p-2 text-gray-700 hover:text-blue-600 transition-colors">
                       <Settings className="w-6 h-6" />
@@ -158,7 +160,7 @@ const Header = () => {
                   <UserDropdown user={user} handleSignOut={handleSignOut} />
                 </div>
               ) : (
-                <Link href="/auth/login">
+                <Link href="/auth/login" className="hidden md:block">
                   <button className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
                     Sign In
                   </button>
@@ -189,7 +191,15 @@ const Header = () => {
           </div>
         </div>
       </header>
-      <MobileMenu isOpen={isMenuOpen} onClose={toggleMenu} />
+      <MobileMenu
+        isOpen={isMenuOpen}
+        onClose={toggleMenu}
+        user={user}
+        cartCount={cartCount}
+        wishlistCount={userWishlist.length}
+        handleSignOut={handleSignOut}
+        handleAuthRequired={handleAuthRequired}
+      />
     </>
   );
 };
