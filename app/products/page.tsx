@@ -1,44 +1,53 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Filter, Search, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ProductCard from '@/components/ProductCard';
-import { Product } from '@/types';
-import { getProducts, searchProducts, getProductsByCategory } from '@/lib/supabase';
+import { Product, Category } from '@/types';
+import { getProducts } from '@/lib/supabase';
+import { getCategories } from '@/app/actions/get-categories';
 
 const ProductsPage = () => {
+  const searchParams = useSearchParams();
+  const initialCategory = searchParams.get('category') || 'all';
+
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 100000 });
   const [sortBy, setSortBy] = useState('newest');
   const [showFilters, setShowFilters] = useState(false);
 
-  const categories = ['all', 'Clothing', 'Accessories', 'Footwear', 'Electronics'];
-
   useEffect(() => {
-    const loadProducts = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const allProducts = await getProducts();
+        const [allProducts, fetchedCategories] = await Promise.all([
+          getProducts(),
+          getCategories(),
+        ]);
         setProducts(allProducts);
         setFilteredProducts(allProducts);
+        setCategories(fetchedCategories);
       } catch (err) {
-        console.error('Error loading products:', err);
-        setError('Failed to load products');
+        console.error('Error loading data:', err);
+        setError('Failed to load data');
         setProducts([]);
         setFilteredProducts([]);
+        setCategories([]);
       } finally {
         setLoading(false);
       }
     };
 
-    loadProducts();
+    loadData();
   }, []);
 
   // Filter and sort products
@@ -134,19 +143,28 @@ const ProductsPage = () => {
               <div className="mb-6">
                 <h4 className="font-medium text-gray-900 mb-3">Category</h4>
                 <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="category"
+                      value="all"
+                      checked={selectedCategory === 'all'}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="mr-2"
+                    />
+                    <span className="text-gray-700">All Categories</span>
+                  </label>
                   {categories.map(category => (
-                    <label key={category} className="flex items-center">
+                    <label key={category.id} className="flex items-center">
                       <input
                         type="radio"
                         name="category"
-                        value={category}
-                        checked={selectedCategory === category}
+                        value={category.name}
+                        checked={selectedCategory === category.name}
                         onChange={(e) => setSelectedCategory(e.target.value)}
                         className="mr-2"
                       />
-                      <span className="text-gray-700 capitalize">
-                        {category === 'all' ? 'All Categories' : category}
-                      </span>
+                      <span className="text-gray-700">{category.name}</span>
                     </label>
                   ))}
                 </div>
