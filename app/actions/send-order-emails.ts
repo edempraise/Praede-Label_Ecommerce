@@ -2,6 +2,7 @@
 
 import { Order } from "@/types";
 import { sendMail } from "@/lib/mailer";
+import { getAdminEmails } from "@/lib/admin";
 import {
   getNewOrderEmailForCustomer,
   getNewOrderEmailForAdmin,
@@ -21,14 +22,14 @@ export const sendOrderStatusUpdateEmail = async (
 
   try {
     let customerEmail;
-    let adminEmail;
+    let adminEmailTemplate;
 
     if (status === "shipped") {
       customerEmail = getOrderShippedEmailForCustomer(order);
-      adminEmail = getOrderShippedEmailForAdmin(order);
+      adminEmailTemplate = getOrderShippedEmailForAdmin(order);
     } else {
       customerEmail = getOrderDeliveredEmailForCustomer(order);
-      adminEmail = getOrderDeliveredEmailForAdmin(order);
+      adminEmailTemplate = getOrderDeliveredEmailForAdmin(order);
     }
 
     // Customer mail
@@ -39,11 +40,14 @@ export const sendOrderStatusUpdateEmail = async (
     });
 
     // Admin mail
-    await sendMail({
-      to: adminEmail.to,
-      subject: adminEmail.subject,
-      html: adminEmail.html,
-    });
+    const adminEmails = await getAdminEmails();
+    if (adminEmails.length > 0) {
+      await sendMail({
+        to: adminEmails,
+        subject: adminEmailTemplate.subject,
+        html: adminEmailTemplate.html,
+      });
+    }
 
     console.log(`✅ Both customer and admin emails sent for ${status} status.`);
     return { success: true };
@@ -58,7 +62,7 @@ export const sendOrderConfirmationEmails = async (order: Order) => {
 
   try {
     const customerEmail = getNewOrderEmailForCustomer(order);
-    const adminEmail = getNewOrderEmailForAdmin(order);
+    const adminEmailTemplate = getNewOrderEmailForAdmin(order);
 
     // Customer mail
     await sendMail({
@@ -68,11 +72,14 @@ export const sendOrderConfirmationEmails = async (order: Order) => {
     });
 
     // Admin mail
-    await sendMail({
-      to: adminEmail.to,
-      subject: adminEmail.subject,
-      html: adminEmail.html,
-    });
+    const adminEmails = await getAdminEmails();
+    if (adminEmails.length > 0) {
+      await sendMail({
+        to: adminEmails,
+        subject: adminEmailTemplate.subject,
+        html: adminEmailTemplate.html,
+      });
+    }
 
     console.log("✅ Both customer and admin emails sent.");
     return { success: true };

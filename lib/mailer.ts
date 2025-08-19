@@ -13,7 +13,7 @@ export const sendMail = async ({
   subject,
   html,
 }: {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
 }) => {

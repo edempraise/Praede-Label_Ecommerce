@@ -1,11 +1,8 @@
 import { Order } from "@/types";
 
-const adminEmail = process.env.ADMIN_EMAIL;
-
 export const getNewOrderEmailForCustomer = (order: Order) => {
   return {
     to: order.customer_email,
-    from: "Praéde <noreply@example.com>",
     subject: `Your Order #${order.id} has been confirmed!`,
     html: `
       <h1>Thank you for your order!</h1>
@@ -20,8 +17,6 @@ export const getNewOrderEmailForCustomer = (order: Order) => {
 
 export const getNewOrderEmailForAdmin = (order: Order) => {
   return {
-    to: adminEmail,
-    from: "Praéde <noreply@example.com>",
     subject: `New Order #${order.id}`,
     html: `
       <h1>New Order Received</h1>
@@ -37,7 +32,6 @@ export const getNewOrderEmailForAdmin = (order: Order) => {
 export const getOrderShippedEmailForCustomer = (order: Order) => {
   return {
     to: order.customer_email,
-    from: "Praéde <noreply@example.com>",
     subject: `Your Order #${order.id} has been shipped!`,
     html: `
       <h1>Your order is on its way!</h1>
@@ -52,7 +46,6 @@ export const getOrderShippedEmailForCustomer = (order: Order) => {
 export const getOrderDeliveredEmailForCustomer = (order: Order) => {
   return {
     to: order.customer_email,
-    from: "Praéde <noreply@example.com>",
     subject: `Your Order #${order.id} has been delivered!`,
     html: `
       <h1>Your order has arrived!</h1>
@@ -68,7 +61,6 @@ export const getOrderStatusUpdateEmailForCustomer = (order: Order) => {
   const statusText = order.status.replace("_", " ");
   return {
     to: order.customer_email,
-    from: "Praéde <noreply@example.com>",
     subject: `Your Order #${order.id} has been updated to: ${statusText}`,
     html: `
       <h1>Order Status Update</h1>
@@ -82,8 +74,6 @@ export const getOrderStatusUpdateEmailForCustomer = (order: Order) => {
 
 export const getOrderShippedEmailForAdmin = (order: Order) => {
     return {
-      to: adminEmail,
-      from: "Praéde <noreply@example.com>",
       subject: `Order #${order.id} has been shipped`,
       html: `
         <h1>Order Shipped</h1>
@@ -98,8 +88,6 @@ export const getAttemptedUserDeletionEmailForAdmin = (
   adminId: string
 ) => {
   return {
-    to: adminEmail,
-    from: "Praéde <noreply@example.com>",
     subject: `[Security Alert] Attempted User Deletion`,
     html: `
       <h1>Attempted User Deletion</h1>
@@ -112,8 +100,6 @@ export const getAttemptedUserDeletionEmailForAdmin = (
 
   export const getOrderDeliveredEmailForAdmin = (order: Order) => {
     return {
-      to: adminEmail,
-      from: "Praéde <noreply@example.com>",
       subject: `Order #${order.id} has been delivered`,
       html: `
         <h1>Order Delivered</h1>
