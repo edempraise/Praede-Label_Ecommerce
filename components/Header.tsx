@@ -189,6 +189,7 @@ const Header = () => {
           </div>
         </div>
       </header>
+      <MobileMenu isOpen={isMenuOpen} onClose={toggleMenu} />
     </>
   );
 };

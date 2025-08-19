@@ -1,6 +1,6 @@
 import { Order } from "@/types";
 
-const adminEmail = "admin@example.com"; // Replace with the actual admin email
+const adminEmail = process.env.ADMIN_EMAIL;
 
 export const getNewOrderEmailForCustomer = (order: Order) => {
   return {
@@ -94,7 +94,6 @@ export const getOrderShippedEmailForAdmin = (order: Order) => {
   };
 
 export const getAttemptedUserDeletionEmailForAdmin = (
-  adminEmail: string,
   userIdToDelete: string,
   adminId: string
 ) => {
