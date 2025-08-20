@@ -218,30 +218,17 @@ const HomePage = () => {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {categories.slice(0, 3).map((category, index) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {categories.slice(0, 6).map((category, index) => (
               <Link key={category.id} href={`/products?category=${category.name}`}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.2 }}
-                  whileHover={{ y: -5 }}
-                  className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  whileHover={{ y: -5, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}
+                  className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all p-6 text-center"
                 >
-                  <div className="aspect-square">
-                    <Image
-                      src={`https://images.pexels.com/photos/1926769/pexels-photo-1926769.jpeg`}
-                      alt={category.name}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center text-white">
-                        <h3 className="text-2xl font-bold mb-2">{category.name}</h3>
-                      </div>
-                    </div>
-                  </div>
+                  <h3 className="font-semibold text-gray-900">{category.name}</h3>
                 </motion.div>
               </Link>
             ))}
