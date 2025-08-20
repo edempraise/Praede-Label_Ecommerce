@@ -21,7 +21,7 @@ export interface ProductFormData {
 
 interface ProductFormProps {
   product: ProductFormData;
-  onChange: (data: ProductFormData) => void;
+  onChange?: (data: ProductFormData) => void;
   onRemove: () => void;
   isSaving: boolean;
   onSubmit?: (data: ProductFormData) => void;
@@ -42,7 +42,9 @@ const ProductForm = ({
   const formData = product;
 
   const setFormData = (updater: (prev: ProductFormData) => ProductFormData) => {
-    onChange(updater(formData));
+    if (onChange) {
+      onChange(updater(formData));
+    }
   };
 
   const handleAddNewCategory = async () => {
@@ -62,7 +64,9 @@ const ProductForm = ({
     if (error) {
       console.error('Error adding category:', error);
     } else {
-      onChange({ ...formData, category: data.name });
+      if (onChange) {
+        onChange({ ...formData, category: data.name });
+      }
       setNewCategoryName('');
       setNewCategorySlug('');
       setNewCategoryDescription('');

@@ -51,10 +51,22 @@ const Header = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">E</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">Praéde</span>
+              {settings.logo?.type === 'image' ? (
+                <img src={settings.logo.src} alt="Logo" className="h-8 w-auto" />
+              ) : (
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center"
+                  style={{
+                    background:
+                      settings.logo?.background?.type === 'gradient'
+                        ? `linear-gradient(to ${settings.logo.background.direction}, ${settings.logo.background.colors.join(', ')})`
+                        : settings.logo?.background?.color,
+                  }}
+                >
+                  <span className="text-white font-bold text-lg">{settings.logo?.text}</span>
+                </div>
+              )}
+              <span className="text-xl font-bold text-gray-900">{settings.siteName}</span>
             </Link>
             <Link href="/" className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors">
               <ArrowLeft className="w-5 h-5" />

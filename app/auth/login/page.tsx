@@ -7,11 +7,13 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 const LoginPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  const { settings } = useSettingsStore();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -100,11 +102,25 @@ const LoginPage = () => {
         className="max-w-md w-full space-y-8"
       >
         <div>
-          <div className="mx-auto h-12 w-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xl">E</span>
+          <div className="mx-auto h-12 w-auto flex items-center justify-center">
+            {settings.logo?.type === 'image' ? (
+              <img src={settings.logo.src} alt="Logo" className="h-12 w-auto" />
+            ) : (
+              <div
+                className="w-12 h-12 rounded-lg flex items-center justify-center"
+                style={{
+                  background:
+                    settings.logo?.background?.type === 'gradient'
+                      ? `linear-gradient(to ${settings.logo.background.direction}, ${settings.logo.background.colors.join(', ')})`
+                      : settings.logo?.background?.color,
+                }}
+              >
+                <span className="text-white font-bold text-xl">{settings.logo?.text}</span>
+              </div>
+            )}
           </div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            Sign in to your account
+            Sign in to {settings.siteName}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
