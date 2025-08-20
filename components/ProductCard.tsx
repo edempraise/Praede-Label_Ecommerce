@@ -149,14 +149,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <span className="text-xs sm:text-sm text-gray-600 ml-1 sm:ml-2">({product.average_rating?.toFixed(1) || 0.0})</span>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-1 sm:space-x-2">
-            <span className="font-bold text-base sm:text-lg text-gray-900">
+        <div className="flex items-end justify-between">
+          <div>
+            <span className="font-bold text-base sm:text-lg text-gray-900 block">
               ₦{product.price.toLocaleString()}
             </span>
             {product.original_price &&
               product.original_price > product.price && (
-                <span className="text-xs sm:text-sm text-gray-500 line-through">
+                <span className="text-xs sm:text-sm text-gray-500 line-through block">
                   ₦{product.original_price.toLocaleString()}
                 </span>
               )}

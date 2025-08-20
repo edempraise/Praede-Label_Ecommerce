@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import ConditionalWhatsAppButton from '@/components/ConditionalWhatsAppButton';
 import { Toaster } from '@/components/ui/toaster';
 import SettingsProvider from '@/components/SettingsProvider';
@@ -50,6 +51,7 @@ export default function RootLayout({
           <main className="min-h-screen">
             {children}
           </main>
+          <Footer />
           <ConditionalWhatsAppButton />
           <Toaster />
         </SettingsProvider>

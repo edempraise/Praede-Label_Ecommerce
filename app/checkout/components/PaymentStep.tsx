@@ -39,14 +39,15 @@ const PaymentStep: FC<PaymentStepProps> = ({
 
       <div className="space-y-4">
         <button
-          onClick={() => setPaymentMethod("paystack")}
-          className={`w-full p-4 border rounded-lg text-left ${
+          onClick={() => {}}
+          disabled
+          className={`w-full p-4 border rounded-lg text-left relative overflow-hidden ${
             paymentMethod === "paystack"
               ? "border-blue-600 ring-2 ring-blue-600"
               : "border-gray-300"
-          }`}
+          } opacity-50 cursor-not-allowed`}
         >
-          <h3 className="font-semibold">Pay with Paystack</h3>
+          <h3 className="font-semibold">Pay with Paystack <span className="text-xs text-red-500">(Coming Soon)</span></h3>
           <p className="text-sm text-gray-600">
             Pay securely with your card.
           </p>
