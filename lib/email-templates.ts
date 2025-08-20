@@ -16,6 +16,7 @@ export const getNewOrderEmailForCustomer = (order: Order) => {
 };
 
 export const getNewOrderEmailForAdmin = (order: Order) => {
+  const url = `${process.env.NEXT_PUBLIC_SITE_URL}/admin/orders/${order.id}`;
   return {
     subject: `New Order #${order.id}`,
     html: `
@@ -24,7 +25,7 @@ export const getNewOrderEmailForAdmin = (order: Order) => {
       <p><strong>Order ID:</strong> ${order.id}</p>
       <p><strong>Customer:</strong> ${order.customer_name} (${order.customer_email})</p>
       <p><strong>Total Amount:</strong> ₦${order.total_amount.toLocaleString()}</p>
-      <a href={`${process.env.NEXT_PUBLIC_SITE_URL}/admin/orders/${order.id}`}>View Order Details</a>
+      <a href="${url}">View Order Details</a>
     `,
   };
 };
