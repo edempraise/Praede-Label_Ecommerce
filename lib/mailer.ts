@@ -19,7 +19,7 @@ export const sendMail = async ({
 }) => {
   try {
     const info = await transporter.sendMail({
-      from: `"Quest App" <${process.env.GMAIL_USER}>`,
+      from: `"Praéde" <${process.env.GMAIL_USER}>`,
       to,
       subject,
       html,

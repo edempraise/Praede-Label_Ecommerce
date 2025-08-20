@@ -155,88 +155,84 @@ const AddProductModal = ({
 
   return (
     <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Overlay */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-gray-500 bg-opacity-75 backdrop-blur-sm transition-opacity z-40"
-            onClick={onClose}
-          />
+      {isOpen && [
+        <motion.div
+          key="overlay"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 backdrop-blur-sm transition-opacity z-40"
+          onClick={onClose}
+        />,
+        <div key="modal" className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
 
-          {/* Modal */}
-          <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-              <span
-                className="hidden sm:inline-block sm:align-middle sm:h-screen"
-                aria-hidden="true"
-              >
-                &#8203;
-              </span>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6"
-              >
-                <div className="absolute top-0 right-0 pt-4 pr-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full sm:p-6"
+            >
+              <div className="absolute top-0 right-0 pt-4 pr-4">
+                <button
+                  type="button"
+                  className="bg-white rounded-md text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  onClick={onClose}
+                >
+                  <span className="sr-only">Close</span>
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              <div className="w-full">
+                <div className="text-center mb-6">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    Add Products
+                  </h3>
+                  <p className="mt-2 text-sm text-gray-600">
+                    Add one or more products to your store
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  {products.map((product, index) => (
+                    <ProductForm
+                      key={index}
+                      product={product}
+                      onChange={(data) => handleProductChange(index, data)}
+                      onRemove={() => removeProduct(index)}
+                      isSaving={isSaving}
+                    />
+                  ))}
+                </div>
+                <div className="mt-4">
                   <button
                     type="button"
-                    className="bg-white rounded-md text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    onClick={onClose}
+                    onClick={addProduct}
+                    className="text-blue-600 hover:text-blue-800"
                   >
-                    <span className="sr-only">Close</span>
-                    <X className="h-6 w-6" />
+                    + Add another product
                   </button>
                 </div>
-                <div className="w-full">
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">
-                      Add Products
-                    </h3>
-                    <p className="mt-2 text-sm text-gray-600">
-                      Add one or more products to your store
-                    </p>
-                  </div>
-                  <div className="space-y-4">
-                    {products.map((product, index) => (
-                      <ProductForm
-                        key={index}
-                        product={product}
-                        onChange={(data) => handleProductChange(index, data)}
-                        onRemove={() => removeProduct(index)}
-                        isSaving={isSaving}
-                      />
-                    ))}
-                  </div>
-                  <div className="mt-4">
-                    <button
-                      type="button"
-                      onClick={addProduct}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      + Add another product
-                    </button>
-                  </div>
-                  <div className="mt-6 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      disabled={isSaving}
-                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSaving ? "Saving..." : "Save All Products"}
-                    </button>
-                  </div>
+                <div className="mt-6 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={isSaving}
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSaving ? "Saving..." : "Save All Products"}
+                  </button>
                 </div>
               </div>
             </motion.div>
           </div>
-        </>
-      )}
+        </div>,
+      ]}
     </AnimatePresence>
   );
 };
