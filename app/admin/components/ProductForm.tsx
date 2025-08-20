@@ -36,7 +36,9 @@ const ProductForm = ({
   onSubmit,
   categories,
 }: ProductFormProps) => {
-  const [newCategory, setNewCategory] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategorySlug, setNewCategorySlug] = useState('');
+  const [newCategoryDescription, setNewCategoryDescription] = useState('');
   const formData = product;
 
   const setFormData = (updater: (prev: ProductFormData) => ProductFormData) => {
@@ -44,17 +46,26 @@ const ProductForm = ({
   };
 
   const handleAddNewCategory = async () => {
-    if (newCategory.trim() === '') return;
+    if (newCategoryName.trim() === '' || newCategorySlug.trim() === '') {
+        // Maybe show a toast error here
+        return;
+    };
     const { data, error } = await supabase
       .from('categories')
-      .insert({ name: newCategory })
+      .insert({
+          name: newCategoryName,
+          slug: newCategorySlug,
+          description: newCategoryDescription,
+      })
       .select()
       .single();
     if (error) {
       console.error('Error adding category:', error);
     } else {
       onChange({ ...formData, category: data.name });
-      setNewCategory('');
+      setNewCategoryName('');
+      setNewCategorySlug('');
+      setNewCategoryDescription('');
     }
   };
 
@@ -149,24 +160,36 @@ const ProductForm = ({
               required
             />
           </div>
-          <div>
+          <div className="space-y-2 p-3 border rounded-md">
             <label className="block text-sm font-medium text-gray-700">Create New Category</label>
-            <div className="mt-1 flex">
-              <input
-                type="text"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="New category name"
-              />
-              <button
-                type="button"
-                onClick={handleAddNewCategory}
-                className="px-3 py-2 border border-l-0 border-gray-300 bg-gray-50 rounded-r-md text-sm font-medium text-gray-700 hover:bg-gray-100"
-              >
-                Add
-              </button>
-            </div>
+            <input
+              type="text"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="New category name"
+            />
+            <input
+              type="text"
+              value={newCategorySlug}
+              onChange={(e) => setNewCategorySlug(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="New category slug"
+            />
+            <textarea
+              value={newCategoryDescription}
+              onChange={(e) => setNewCategoryDescription(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="New category description"
+              rows={2}
+            />
+            <button
+              type="button"
+              onClick={handleAddNewCategory}
+              className="w-full mt-2 px-3 py-2 border border-transparent bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+            >
+              Add Category
+            </button>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Select Category</label>
