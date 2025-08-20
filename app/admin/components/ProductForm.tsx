@@ -5,7 +5,6 @@ import { useDropzone } from 'react-dropzone';
 import { X, Plus, Minus, Upload, Trash2 } from 'lucide-react';
 import { Product, Category } from '@/types';
 import { supabase } from '@/lib/supabase';
-import { Combobox } from '@/components/ui/combobox';
 
 export interface ProductFormData {
   name: string;
@@ -26,6 +25,7 @@ interface ProductFormProps {
   onRemove: () => void;
   isSaving: boolean;
   onSubmit?: (data: ProductFormData) => void;
+  categories: Category[];
 }
 
 const ProductForm = ({
@@ -35,27 +35,26 @@ const ProductForm = ({
   isSaving,
   onSubmit,
   categories,
-}: ProductFormProps & { categories: Category[] }) => {
+}: ProductFormProps) => {
+  const [newCategory, setNewCategory] = useState('');
   const formData = product;
 
   const setFormData = (updater: (prev: ProductFormData) => ProductFormData) => {
     onChange(updater(formData));
   };
 
-  const handleAddNewCategory = async (categoryName: string) => {
-    if (categoryName.trim() === '') return;
+  const handleAddNewCategory = async () => {
+    if (newCategory.trim() === '') return;
     const { data, error } = await supabase
       .from('categories')
-      .insert({ name: categoryName })
+      .insert({ name: newCategory })
       .select()
       .single();
     if (error) {
       console.error('Error adding category:', error);
     } else {
-      // The parent component is responsible for updating the categories list
-      // and then passing the new list down. Here we just update the form's
-      // current category.
       onChange({ ...formData, category: data.name });
+      setNewCategory('');
     }
   };
 
@@ -151,16 +150,39 @@ const ProductForm = ({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Category</label>
-            <Combobox
-              options={categories.map(cat => ({ value: cat.name.toLowerCase(), label: cat.name }))}
+            <label className="block text-sm font-medium text-gray-700">Create New Category</label>
+            <div className="mt-1 flex">
+              <input
+                type="text"
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="New category name"
+              />
+              <button
+                type="button"
+                onClick={handleAddNewCategory}
+                className="px-3 py-2 border border-l-0 border-gray-300 bg-gray-50 rounded-r-md text-sm font-medium text-gray-700 hover:bg-gray-100"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Select Category</label>
+            <select
+              name="category"
               value={formData.category}
-              onChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-              onCreate={handleAddNewCategory}
-              placeholder="Select or create a category..."
-              emptyMessage="No category found."
-              className="mt-1"
-            />
+              onChange={handleInputChange}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="" disabled>Select a category</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

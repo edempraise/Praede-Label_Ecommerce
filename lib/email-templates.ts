@@ -1,5 +1,9 @@
 import { Order } from "@/types";
 
+if (!process.env.NEXT_PUBLIC_SITE_URL) {
+  throw new Error("Missing environment variable: NEXT_PUBLIC_SITE_URL");
+}
+
 export const getNewOrderEmailForCustomer = (order: Order) => {
   return {
     to: order.customer_email,

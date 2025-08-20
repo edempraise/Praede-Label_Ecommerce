@@ -3,43 +3,49 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Product } from "@/types";
-import { getProductById, updateProduct, supabase } from "@/lib/supabase";
+import { getProductById, updateProduct, supabase, getCategories } from "@/lib/supabase";
 import Link from "next/link";
 import { ArrowLeft, Save, Trash2 } from "lucide-react";
 import ProductForm, {
   ProductFormData,
 } from "@/app/admin/components/ProductForm";
 import { useToast } from "@/hooks/use-toast";
+import { Category } from "@/types";
 
 const ProductEditPage = () => {
   const { id } = useParams();
   const router = useRouter();
   const { toast } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchData = async () => {
       if (!id) return;
       try {
         setLoading(true);
-        const fetchedProduct = await getProductById(id as string);
+        const [fetchedProduct, fetchedCategories] = await Promise.all([
+          getProductById(id as string),
+          getCategories(),
+        ]);
         if (!fetchedProduct) {
           setError("Product not found.");
         } else {
           setProduct(fetchedProduct);
         }
+        setCategories(fetchedCategories);
       } catch (err) {
-        console.error("Error fetching product:", err);
-        setError("Failed to fetch product details.");
+        console.error("Error fetching data:", err);
+        setError("Failed to fetch data.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProduct();
+    fetchData();
   }, [id]);
 
   const uploadImages = async (images: (File | string)[]): Promise<string[]> => {
@@ -165,6 +171,7 @@ const ProductEditPage = () => {
             onRemove={() => handleDelete()}
             isSaving={isSaving}
             onSubmit={handleSave}
+            categories={categories}
           />
           <div className="mt-8 pt-6 border-t border-gray-200">
             <button
