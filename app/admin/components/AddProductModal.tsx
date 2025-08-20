@@ -44,10 +44,13 @@ const AddProductModal = ({
         const { data, error } = await supabase.from('categories').select('*');
         if (error) {
           console.error('Error fetching categories:', error);
+          setCategories([]);
         } else {
-          setCategories(data);
+          setCategories(data || []);
           // Set default category for new products
-          setProducts(prev => prev.map(p => p.category ? p : { ...p, category: data[0]?.name || '' }));
+          if (data && data.length > 0) {
+            setProducts(prev => prev.map(p => p.category ? p : { ...p, category: data[0]?.name || '' }));
+          }
         }
       };
       fetchCategories();
