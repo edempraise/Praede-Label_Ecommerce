@@ -1,11 +1,12 @@
 "use server";
 
 import { supabaseServer } from "@/lib/supabase-server";
+import { Category } from "@/types";
 
-export const getCategories = async () => {
+export const getCategories = async (): Promise<Category[]> => {
   const { data: categories, error } = await supabaseServer
     .from("categories")
-    .select("id, name")
+    .select("*")
     .order("name", { ascending: true });
 
   if (error) {
@@ -13,5 +14,5 @@ export const getCategories = async () => {
     return [];
   }
 
-  return categories;
+  return categories as Category[];
 };

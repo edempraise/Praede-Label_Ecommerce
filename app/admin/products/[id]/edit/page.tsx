@@ -161,9 +161,10 @@ const ProductEditPage = () => {
             Edit Product
           </h1>
           <ProductForm
-            initialData={product}
-            onSubmit={handleSave}
+            product={product}
+            onRemove={() => handleDelete()}
             isSaving={isSaving}
+            onSubmit={handleSave}
           />
           <div className="mt-8 pt-6 border-t border-gray-200">
             <button
