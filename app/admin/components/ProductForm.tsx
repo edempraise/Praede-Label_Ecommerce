@@ -5,6 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import { X, Plus, Minus, Upload, Trash2 } from 'lucide-react';
 import { Product, Category } from '@/types';
 import { supabase } from '@/lib/supabase';
+import { Combobox } from '@/components/ui/combobox';
 
 export interface ProductFormData {
   name: string;
@@ -34,8 +35,6 @@ const ProductForm = ({
 }: ProductFormProps) => {
   const [formData, setFormData] = useState<ProductFormData>(product);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
-  const [newCategory, setNewCategory] = useState('');
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -53,11 +52,11 @@ const ProductForm = ({
     onChange(formData);
   }, [formData]);
 
-  const handleAddNewCategory = async () => {
-    if (newCategory.trim() === '') return;
+  const handleAddNewCategory = async (categoryName: string) => {
+    if (categoryName.trim() === '') return;
     const { data, error } = await supabase
       .from('categories')
-      .insert({ name: newCategory })
+      .insert({ name: categoryName })
       .select()
       .single();
     if (error) {
@@ -65,8 +64,6 @@ const ProductForm = ({
     } else {
       setCategories([...categories, data]);
       setFormData((prev) => ({ ...prev, category: data.name }));
-      setShowNewCategoryInput(false);
-      setNewCategory('');
     }
   };
 
@@ -165,48 +162,20 @@ const ProductForm = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700">Category</label>
-              <select
-                name="category"
+              <Combobox
+                options={categories.map(cat => ({ value: cat.name.toLowerCase(), label: cat.name }))}
                 value={formData.category}
-                onChange={(e) => {
-                  if (e.target.value === 'add_new') {
-                    setShowNewCategoryInput(true);
-                  } else {
-                    handleInputChange(e);
-                    setShowNewCategoryInput(false);
-                  }
-                }}
-                className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.name}>
-                    {cat.name}
-                  </option>
-                ))}
-                <option value="add_new">+ Add new category</option>
-              </select>
-              {showNewCategoryInput && (
-                <div className="mt-2 flex">
-                  <input
-                    type="text"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="New category name"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddNewCategory}
-                    className="px-3 py-2 border border-l-0 border-gray-300 bg-gray-50 rounded-r-md text-sm font-medium text-gray-700 hover:bg-gray-100"
-                  >
-                    Add
-                  </button>
-                </div>
-              )}
+                onChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                onCreate={handleAddNewCategory}
+                placeholder="Select or create a category..."
+                emptyMessage="No category found."
+                className="mt-1"
+              />
             </div>
           </div>
 
           {/* Pricing and Inventory */}
+          <div>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Price (₦) *</label>

@@ -130,33 +130,33 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
       </Link>
 
-      <div className="p-4">
+      <div className="p-2 sm:p-4">
         <Link href={`/products/${product.id}`}>
-          <h3 className="font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors">
+          <h3 className="font-semibold text-sm sm:text-base text-gray-900 mb-1 sm:mb-2 hover:text-blue-600 transition-colors truncate">
             {product.name}
           </h3>
         </Link>
 
-        <div className="flex items-center mb-2">
+        <div className="flex items-center mb-1 sm:mb-2">
           <div className="flex items-center">
             {[...Array(5)].map((_, i) => (
               <Star
                 key={i}
-                className={`w-4 h-4 ${i < Math.round(product.average_rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                className={`w-3 h-3 sm:w-4 sm:h-4 ${i < Math.round(product.average_rating || 0) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
               />
             ))}
           </div>
-          <span className="text-sm text-gray-600 ml-2">({product.average_rating?.toFixed(1) || 0.0})</span>
+          <span className="text-xs sm:text-sm text-gray-600 ml-1 sm:ml-2">({product.average_rating?.toFixed(1) || 0.0})</span>
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="font-bold text-lg text-gray-900">
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            <span className="font-bold text-base sm:text-lg text-gray-900">
               ₦{product.price.toLocaleString()}
             </span>
             {product.original_price &&
               product.original_price > product.price && (
-                <span className="text-sm text-gray-500 line-through">
+                <span className="text-xs sm:text-sm text-gray-500 line-through">
                   ₦{product.original_price.toLocaleString()}
                 </span>
               )}
@@ -166,9 +166,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-1"
+              className="bg-blue-600 text-white px-2 py-1 sm:px-4 sm:py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-1 text-xs sm:text-sm"
             >
-              <span>View Details</span>
+              <span>View</span>
             </motion.button>
           </Link>
         </div>

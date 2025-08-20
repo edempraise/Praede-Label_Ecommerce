@@ -218,9 +218,9 @@ const ProductsPage = () => {
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-gray-200 rounded-lg h-80 animate-pulse"></div>
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="bg-gray-200 rounded-lg h-64 sm:h-80 animate-pulse"></div>
                 ))}
               </div>
             ) : filteredProducts.length === 0 ? (
@@ -242,7 +242,7 @@ const ProductsPage = () => {
             ) : (
               <motion.div
                 layout
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
               >
                 {filteredProducts.map((product) => (
                   <motion.div

@@ -358,7 +358,7 @@ export const updateOrderStatus = async (
 
   if (error) throw error;
 
-  if (data && (status === "shipped" || status === "delivered")) {
+  if (data && (status === "shipped" || status === "delivered" || status === "cancelled")) {
     try {
       await sendOrderStatusUpdateEmail(data, status);
     } catch (emailError) {

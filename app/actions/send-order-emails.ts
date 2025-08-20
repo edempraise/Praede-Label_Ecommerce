@@ -10,11 +10,13 @@ import {
   getOrderShippedEmailForAdmin,
   getOrderDeliveredEmailForCustomer,
   getOrderDeliveredEmailForAdmin,
+  getOrderCancelledEmailForCustomer,
+  getOrderCancelledEmailForAdmin,
 } from "@/lib/email-templates";
 
 export const sendOrderStatusUpdateEmail = async (
   order: Order,
-  status: "shipped" | "delivered"
+  status: "shipped" | "delivered" | "cancelled"
 ) => {
   console.log(
     `📨 Sending order status update emails for order: ${order.id}, status: ${status}`
@@ -27,9 +29,12 @@ export const sendOrderStatusUpdateEmail = async (
     if (status === "shipped") {
       customerEmail = getOrderShippedEmailForCustomer(order);
       adminEmailTemplate = getOrderShippedEmailForAdmin(order);
-    } else {
+    } else if (status === "delivered") {
       customerEmail = getOrderDeliveredEmailForCustomer(order);
       adminEmailTemplate = getOrderDeliveredEmailForAdmin(order);
+    } else { // cancelled
+      customerEmail = getOrderCancelledEmailForCustomer(order);
+      adminEmailTemplate = getOrderCancelledEmailForAdmin(order);
     }
 
     // Customer mail
