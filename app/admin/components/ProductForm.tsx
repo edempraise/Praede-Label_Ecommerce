@@ -176,9 +176,9 @@ const ProductForm = ({
 
           {/* Pricing and Inventory */}
           <div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Price (₦) *</label>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Price (₦) *</label>
               <input
                 type="number"
                 name="price"
@@ -212,6 +212,7 @@ const ProductForm = ({
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 min="0"
               />
+            </div>
             </div>
           </div>
         </div>
