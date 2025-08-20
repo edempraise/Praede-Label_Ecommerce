@@ -22,7 +22,7 @@ export interface ProductFormData {
 
 interface ProductFormProps {
   product: ProductFormData;
-  onChange?: (data: ProductFormData) => void;
+  onChange: (data: ProductFormData) => void;
   onRemove: () => void;
   isSaving: boolean;
   onSubmit?: (data: ProductFormData) => void;
@@ -34,27 +34,13 @@ const ProductForm = ({
   onRemove,
   isSaving,
   onSubmit,
-}: ProductFormProps) => {
-  const [formData, setFormData] = useState<ProductFormData>(product);
-  const [categories, setCategories] = useState<Category[]>([]);
+  categories,
+}: ProductFormProps & { categories: Category[] }) => {
+  const formData = product;
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const { data, error } = await supabase.from('categories').select('*');
-      if (error) {
-        console.error('Error fetching categories:', error);
-      } else {
-        setCategories(data);
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    if (onChange) {
-      onChange(formData);
-    }
-  }, [formData, onChange]);
+  const setFormData = (updater: (prev: ProductFormData) => ProductFormData) => {
+    onChange(updater(formData));
+  };
 
   const handleAddNewCategory = async (categoryName: string) => {
     if (categoryName.trim() === '') return;
@@ -66,8 +52,10 @@ const ProductForm = ({
     if (error) {
       console.error('Error adding category:', error);
     } else {
-      setCategories([...categories, data]);
-      setFormData((prev) => ({ ...prev, category: data.name }));
+      // The parent component is responsible for updating the categories list
+      // and then passing the new list down. Here we just update the form's
+      // current category.
+      onChange({ ...formData, category: data.name });
     }
   };
 

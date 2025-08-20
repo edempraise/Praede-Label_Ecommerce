@@ -73,9 +73,12 @@ const AdminDashboard = () => {
     }
   };
 
+  const deliveredOrders = orders.filter(order => order.status === 'delivered');
+  const totalRevenue = deliveredOrders.reduce((acc, order) => acc + order.total_amount, 0);
+
   const stats = [
     { title: 'Total Orders', value: orders.length, icon: ShoppingCart, color: 'bg-blue-500' },
-    { title: 'Total Revenue', value: `₦${orders.reduce((acc, order) => acc + order.total_amount, 0).toLocaleString()}`, icon: TrendingUp, color: 'bg-green-500' },
+    { title: 'Total Revenue', value: `₦${totalRevenue.toLocaleString()}`, icon: TrendingUp, color: 'bg-green-500' },
     { title: 'Total Products', value: products.length, icon: Package, color: 'bg-purple-500' },
     { title: 'Total Customers', value: users.length, icon: Users, color: 'bg-orange-500' },
   ];
