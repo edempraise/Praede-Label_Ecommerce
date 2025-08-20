@@ -81,11 +81,11 @@ const MobileMenu: FC<MobileMenuProps> = ({
               </Link>
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="categories">
-                  <AccordionTrigger className="flex items-center gap-2 py-2 text-gray-700 hover:text-blue-600 transition-colors">
+                  <AccordionTrigger className="flex items-center justify-start gap-2 py-2 text-gray-700 hover:text-blue-600 transition-colors w-full [&[data-state=open]>svg]:rotate-180">
                     <Package className="w-5 h-5" />
                     Categories
                   </AccordionTrigger>
-                  <AccordionContent className="pl-6 max-h-48 overflow-y-auto">
+                  <AccordionContent className="pl-8 max-h-48 overflow-y-auto">
                     {categories.map((category) => (
                       <Link
                         key={category.id}
@@ -99,10 +99,6 @@ const MobileMenu: FC<MobileMenuProps> = ({
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-              <Link href="/about" className="flex items-center gap-2 py-2 text-gray-700 hover:text-blue-600 transition-colors" onClick={onClose}>
-                <UserIcon className="w-5 h-5" />
-                About
-              </Link>
 
               <div className="border-t my-2"></div>
 
@@ -126,7 +122,7 @@ const MobileMenu: FC<MobileMenuProps> = ({
               {user ? (
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="profile">
-                    <AccordionTrigger className="flex items-center gap-2 py-2 text-gray-700 hover:text-blue-600 transition-colors">
+                    <AccordionTrigger className="flex items-center justify-start gap-2 py-2 text-gray-700 hover:text-blue-600 transition-colors w-full [&[data-state=open]>svg]:rotate-180">
                       <UserIcon className="w-5 h-5" />
                       Profile
                     </AccordionTrigger>

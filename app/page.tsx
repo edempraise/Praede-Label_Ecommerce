@@ -7,31 +7,37 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Star, Truck, Shield, HeadphonesIcon } from 'lucide-react';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/types';
-import { getFeaturedProducts } from '@/lib/supabase';
+import { getFeaturedProducts, getCategories } from '@/lib/supabase';
+import { Category } from '@/types';
 
 const HomePage = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadFeaturedProducts = async () => {
+    const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const products = await getFeaturedProducts();
+        const [products, fetchedCategories] = await Promise.all([
+          getFeaturedProducts(),
+          getCategories(),
+        ]);
         setFeaturedProducts(products);
+        setCategories(fetchedCategories);
       } catch (err) {
-        console.error('Error loading featured products:', err);
-        setError('Failed to load featured products');
-        // Fallback to empty array
+        console.error('Error loading data:', err);
+        setError('Failed to load data');
         setFeaturedProducts([]);
+        setCategories([]);
       } finally {
         setLoading(false);
       }
     };
 
-    loadFeaturedProducts();
+    loadData();
   }, []);
 
   return (
@@ -213,82 +219,33 @@ const HomePage = () => {
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                name: 'Clothing',
-                image: 'https://images.pexels.com/photos/1926769/pexels-photo-1926769.jpeg',
-                count: '150+ Products'
-              },
-              {
-                name: 'Accessories',
-                image: 'https://images.pexels.com/photos/1152077/pexels-photo-1152077.jpeg',
-                count: '80+ Products'
-              },
-              {
-                name: 'Footwear',
-                image: 'https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg',
-                count: '120+ Products'
-              }
-            ].map((category, index) => (
-              <motion.div
-                key={category.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
-                whileHover={{ y: -5 }}
-                className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow"
-              >
-                <div className="aspect-square">
-                  <Image
-                    src={category.image}
-                    alt={category.name}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center text-white">
-                      <h3 className="text-2xl font-bold mb-2">{category.name}</h3>
-                      <p className="text-gray-200">{category.count}</p>
+            {categories.slice(0, 3).map((category, index) => (
+              <Link key={category.id} href={`/products?category=${category.name}`}>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.2 }}
+                  whileHover={{ y: -5 }}
+                  className="relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+                >
+                  <div className="aspect-square">
+                    <Image
+                      src={`https://images.pexels.com/photos/1926769/pexels-photo-1926769.jpeg`}
+                      alt={category.name}
+                      fill
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center text-white">
+                        <h3 className="text-2xl font-bold mb-2">{category.name}</h3>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
+                </motion.div>
+              </Link>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Newsletter */}
-      <section className="py-16 bg-blue-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Stay Updated
-            </h2>
-            <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
-              Subscribe to our newsletter for exclusive deals and new arrivals
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 rounded-lg border-0 focus:ring-2 focus:ring-blue-300"
-              />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-              >
-                Subscribe
-              </motion.button>
-            </div>
-          </motion.div>
         </div>
       </section>
     </div>
