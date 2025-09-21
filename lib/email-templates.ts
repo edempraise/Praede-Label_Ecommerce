@@ -1,20 +1,19 @@
 import { Order } from "@/types";
 
 if (!process.env.NEXT_PUBLIC_SITE_URL) {
-  throw new Error("Missing environment variable: NEXT_PUBLIC_SITE_URL");
+  throw new Error("Missing environment variable: SITE_URL");
 }
 
 export const getNewOrderEmailForCustomer = (order: Order) => {
   return {
     to: order.customer_email,
-    subject: `Your Order #${order.id} has been confirmed!`,
+    subject: `🎁Yay! We’ve received your order!`,
     html: `
       <h1>Thank you for your order!</h1>
       <p>Hi ${order.customer_name},</p>
-      <p>We've received your order #${order.id} and are getting it ready.</p>
+      <p>We’ll keep you posted as your order #${order.id} makes its way to you.</p>
       <p>Total Amount: ₦${order.total_amount.toLocaleString()}</p>
-      <p>We'll notify you again when your order status changes.</p>
-      <p>Thank you for shopping with us!</p>
+      <p>Thank you for choosing us! </p>
     `,
   };
 };
@@ -38,11 +37,11 @@ export const getOrderShippedEmailForCustomer = (order: Order) => {
   const url = `${process.env.NEXT_PUBLIC_SITE_URL}/orders/${order.id}`;
   return {
     to: order.customer_email,
-    subject: `Your Order #${order.id} has been shipped!`,
+    subject: `🚚Great News! Your order is on the move!`,
     html: `
-      <h1>Your order is on its way!</h1>
+      <h1>🚚Great News! Your order is on the move!</h1>
       <p>Hi ${order.customer_name},</p>
-      <p>Great news! Your order #${order.id} has been shipped and is on its way to you.</p>
+      <p>Order #${order.id} has been packed with care and it’s now en route to you. </p>
       <p>You can view your order details here: <a href="${url}">View Order</a></p>
       <p>Thank you for shopping with us!</p>
     `,
@@ -55,30 +54,15 @@ export const getOrderDeliveredEmailForCustomer = (order: Order) => {
     to: order.customer_email,
     subject: `Your Order #${order.id} has been delivered!`,
     html: `
-      <h1>Your order has arrived!</h1>
+      <h1>Your order has reached its new home enjoy every bit.</h1>
       <p>Hi ${order.customer_name},</p>
-      <p>Your order #${order.id} has been delivered. We hope you enjoy your purchase!</p>
-      <p>You can view your order details here: <a href="${url}">View Order</a></p>
-      <p>Thank you for shopping with us!</p>
+      <p>Your order #${order.id} has been delivered. Here’s to many more happy unboxing together.</p>
+      <p>We’d love to hear what you think, please take a moment to rate and review your package: <a href="${url}">View Order</a></p>
+      <p>Your feedback helps us grow and glow!</p>
     `,
   };
 };
 
-export const getOrderStatusUpdateEmailForCustomer = (order: Order) => {
-  const statusText = order.status.replace("_", " ");
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL}/orders/${order.id}`;
-  return {
-    to: order.customer_email,
-    subject: `Your Order #${order.id} has been updated to: ${statusText}`,
-    html: `
-      <h1>Order Status Update</h1>
-      <p>Hi ${order.customer_name},</p>
-      <p>The status of your order #${order.id} has been updated to <strong>${statusText}</strong>.</p>
-      <p>You can view your order details here: <a href="${url}">View Order</a></p>
-      <p>Thank you for shopping with us!</p>
-    `,
-  };
-};
 
 export const getOrderShippedEmailForAdmin = (order: Order) => {
     const url = `${process.env.NEXT_PUBLIC_SITE_URL}/admin/orders/${order.id}`;
