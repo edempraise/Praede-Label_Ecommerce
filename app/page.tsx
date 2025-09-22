@@ -43,10 +43,10 @@ const HomePage = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative h-screen flex items-center justify-start overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
-            src="https://images.pexels.com/photos/1040945/pexels-photo-1040945.jpeg"
+            src="/images/hero.png"
             alt="Fashion Hero"
             fill
             className="object-cover"
@@ -54,31 +54,33 @@ const HomePage = () => {
           />
           <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         </div>
-        
+
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="relative z-10 text-center text-white max-w-4xl mx-auto px-4"
+          className="relative z-10 text-left text-white max-w-7xl w-full px-4 sm:px-6 lg:px-8 mx-auto"
         >
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">
-            Elevate Your Style
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 text-gray-200">
-            Discover premium fashion and lifestyle products curated just for you
-          </p>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Link
-              href="/products"
-              className="inline-flex items-center space-x-2 bg-white text-black px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors"
+          <div className="max-w-2xl">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6">
+              One Brand, <br /><span className='text-purple bg-black'>Endless Choices</span>
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 text-gray-200">
+              <i>Elevate Your Style</i>
+            </p>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <span>Shop Now</span>
-              <ArrowRight className="w-5 h-5" />
-            </Link>
-          </motion.div>
+              <Link
+                href="/products"
+                className="inline-flex items-center space-x-2 bg-white text-black px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors"
+              >
+                <span>Shop Now</span>
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </motion.div>
+          </div>
         </motion.div>
       </section>
 
@@ -100,7 +102,7 @@ const HomePage = () => {
                 Lagos: 24-48 hours delivery. Outside Lagos: 4-7 business days
               </p>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -115,7 +117,7 @@ const HomePage = () => {
                 Bank transfer with receipt verification for your security
               </p>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
