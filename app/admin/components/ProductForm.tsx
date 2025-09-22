@@ -21,6 +21,7 @@ export interface ProductFormData {
 
 interface ProductFormProps {
   product: ProductFormData;
+  onChange?: (data: ProductFormData) => void;
   onRemove: () => void;
   isSaving: boolean;
   onSubmit?: (data: ProductFormData) => void;
