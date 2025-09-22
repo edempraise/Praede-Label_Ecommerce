@@ -74,13 +74,33 @@ const LoginPage = () => {
       }
 
       if (data.user) {
+        const { data: userProfile, error: profileError } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileError) {
+          toast({
+            title: 'Login Failed',
+            description: 'Could not fetch user profile.',
+            variant: 'destructive',
+          });
+          // Also sign out the user
+          await supabase.auth.signOut();
+          return;
+        }
+
         toast({
           title: 'Welcome back!',
           description: 'You have been successfully logged in.',
         });
         
-        // Redirect to the intended page or home
-        router.push(redirectTo);
+        if (userProfile.is_admin) {
+          router.push('/admin');
+        } else {
+          router.push('/products');
+        }
       }
     } catch (error) {
       console.error('Login error:', error);

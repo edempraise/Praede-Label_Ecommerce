@@ -217,7 +217,7 @@ const ProductsPage = () => {
                             )}
                           </button>
                           <Link
-                            href={`/admin/products/${product.id}`}
+                            href={`/admin/products/${product.id}/edit`}
                             className="text-gray-500 hover:text-yellow-700"
                             title="Edit product"
                           >
